@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
 
@@ -23,7 +22,7 @@ export default function RootLayout({
               <li><Link href="/">Home</Link></li>
               <li><a href="#ourstory">Our Story</a></li>
               <li><Link href="/gallery">Gallery</Link></li>
-              <li><a href="#rsvp">RSVP</a></li>
+              <li><Link href="/rsvp">RSVP</Link></li>
               <li><a href="#travel">Travel</a></li>
               <li><a href="#whattoknow">What to Know</a></li>
               <li><a href="#registry">Registry</a></li>
