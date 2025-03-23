@@ -22,7 +22,7 @@ export function parseRsvp(rsvp: FormData): RSVP {
 export async function addRsvp(rsvp: RSVP) {
     const sheets = google.sheets({ version: "v4", auth });
     const spreadsheetId = process.env.SHEET_ID!;
-    const range = "Sheet1!A:B";
+    const range = "Sheet1!A:C"; // TODO: define sheet structure then update this
     const valueInputOption = "USER_ENTERED";
 
     const resource = {
