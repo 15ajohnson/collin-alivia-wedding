@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "googleapis": "^148.0.0",
     "jose": "^6.0.10",
     "next": "15.2.3",
     "react": "^19.0.0",
