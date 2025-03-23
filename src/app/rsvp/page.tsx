@@ -15,8 +15,8 @@ export default function RSVPPage() {
                 </div>
 
                 <div>
-                    <label htmlFor="plus-one">Will you be bringing a plus one?</label>
-                    <input type="checkbox" id="plus-one" name="plus-one" />
+                    <label htmlFor="attending">Will you be attending?</label>
+                    <input type="checkbox" id="attending" name="attending" defaultChecked />
                 </div>
 
                 <button className="border p-2 hover:cursor-pointer" type="submit">Submit</button>
