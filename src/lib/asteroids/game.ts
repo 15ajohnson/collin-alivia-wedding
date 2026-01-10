@@ -1,6 +1,7 @@
 
 import { Game } from "phaser";
 import { TheGame } from "./scenes/the-game";
+import { Start } from "./scenes/start";
 
 const config = {
     type: Phaser.AUTO,
@@ -10,6 +11,7 @@ const config = {
         default: 'arcade',
     },
     scene: [
+        Start,
         TheGame
     ]
 };
