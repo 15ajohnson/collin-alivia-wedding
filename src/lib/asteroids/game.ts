@@ -14,6 +14,7 @@ class MyScene extends Scene {
     cursorKeys!: Phaser.Types.Input.Keyboard.CursorKeys;
     player!: Phaser.GameObjects.Triangle;
     asteroids!: Phaser.Physics.Arcade.Group;
+    reloading: boolean = false;
 
     constructor() {
         super({ key: 'MyScene' });
@@ -28,7 +29,6 @@ class MyScene extends Scene {
         this.cursorKeys = this.input.keyboard!.createCursorKeys();
 
         // player setup
-        // this.player = this.add.ellipse(400, 300, 50, 50, 0xff0000)
         this.player = this.add.triangle(400, 300, 0, 0, 40, 15, 0, 30, 0x0000ff);
         this.physics.add.existing(this.player);
         physicsBody(this.player).setMaxSpeed(CONSTANTS.MOVEMENT_MAX_SPEED);
@@ -47,6 +47,7 @@ class MyScene extends Scene {
 
     // game loop
     update() {
+        this.shoot();
         this.move();
 
         // when moving off the world bounds, wrap around
@@ -55,6 +56,26 @@ class MyScene extends Scene {
             this.wrapBounds(asteroid as Phaser.GameObjects.Shape);
             return true;
         })
+    }
+
+    private shoot() {
+        if (this.cursorKeys.space.isDown && !this.reloading) {
+            const bullet = this.add.ellipse(this.player.x, this.player.y, 5, 5, 0xffffff);
+            // appear under the player
+            bullet.setDepth(-1);
+            this.physics.add.existing(bullet);
+            bullet.rotation = this.player.rotation;
+            physicsBody(bullet).setVelocity(
+                500 * Math.cos(bullet.rotation),
+                500 * Math.sin(bullet.rotation)
+            );
+
+            // start reload timer
+            this.reloading = true;
+            this.time.delayedCall(CONSTANTS.RELOAD_TIME, () => {
+                this.reloading = false;
+            });
+        }
     }
 
     private move() {
