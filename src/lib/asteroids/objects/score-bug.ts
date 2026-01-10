@@ -1,6 +1,6 @@
 
 export class ScoreBug extends Phaser.GameObjects.Text {
-    score: number;
+    private score: number;
 
     static text(score: number) {
         return `Score: ${score}`;
@@ -15,5 +15,9 @@ export class ScoreBug extends Phaser.GameObjects.Text {
     addToScore(amount: number) {
         this.score += amount;
         this.setText(ScoreBug.text(this.score));
+    }
+
+    getScore() {
+        return this.score;
     }
 }

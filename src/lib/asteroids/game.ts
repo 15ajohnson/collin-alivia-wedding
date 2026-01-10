@@ -2,6 +2,7 @@
 import { Game } from "phaser";
 import { TheGame } from "./scenes/the-game";
 import { Start } from "./scenes/start";
+import { End } from "./scenes/end";
 
 const config = {
     type: Phaser.AUTO,
@@ -12,7 +13,8 @@ const config = {
     },
     scene: [
         Start,
-        TheGame
+        TheGame,
+        End
     ]
 };
 

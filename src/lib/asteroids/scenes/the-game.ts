@@ -4,6 +4,7 @@ import { ScoreBug } from "../objects/score-bug";
 import { physicsBody, Position } from "../helpers";
 import { CONSTANTS } from "../constants";
 import { Asteroid, AsteroidSize } from "../objects/asteroid";
+import { EndData } from "./end";
 
 export class TheGame extends Scene {
     cursorKeys!: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -55,6 +56,10 @@ export class TheGame extends Scene {
             asteroid.destroy();
         });
 
+        this.physics.add.overlap(this.player, this.asteroids, () => {
+            const endData: EndData = { finalScore: this.scoreBug.getScore() };
+            this.scene.start('end', endData);
+        });
     }
 
     // game loop
