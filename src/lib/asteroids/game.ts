@@ -10,6 +10,11 @@ const physicsBody = (gameObject: Phaser.GameObjects.GameObject) => {
     }
 }
 
+interface Position {
+    x: number;
+    y: number;
+}
+
 class MyScene extends Scene {
     cursorKeys!: Phaser.Types.Input.Keyboard.CursorKeys;
     player!: Phaser.GameObjects.Triangle;
@@ -36,20 +41,19 @@ class MyScene extends Scene {
 
         // asteroids
         this.asteroids = this.physics.add.group();
-        for (let i = 0; i < 3; i++) {
-            const x = Phaser.Math.Between(0, this.sys.canvas.width);
-            const y = Phaser.Math.Between(0, this.sys.canvas.height);
-            const asteroid = this.add.ellipse(x, y, 50, 50, 0x00ff00);
-            this.asteroids.add(asteroid);
-
-            physicsBody(asteroid).setVelocity(Phaser.Math.Between(-100, 100), Phaser.Math.Between(-100, 100));
-        }
+        this.createAsteroids(AsteroidSize.LARGE, 3);
 
         // bullets group
         this.bullets = this.physics.add.group();
 
         // collisions
-        this.physics.add.overlap(this.bullets, this.asteroids, (bullet, asteroid) => {
+        this.physics.add.overlap(this.bullets, this.asteroids, (bullet, asteroidObj) => {
+            const asteroid = asteroidObj as Asteroid;
+            if (asteroid.size === AsteroidSize.LARGE) {
+                this.createAsteroids(AsteroidSize.MEDIUM, 2, { x: asteroid.x, y: asteroid.y });
+            } else if (asteroid.size === AsteroidSize.MEDIUM) {
+                this.createAsteroids(AsteroidSize.SMALL, 2, { x: asteroid.x, y: asteroid.y });
+            }
             bullet.destroy();
             asteroid.destroy();
         });
@@ -126,7 +130,14 @@ class MyScene extends Scene {
         } else if (object.y > this.sys.canvas.height) {
             object.setY(0);
         }
+    }
 
+    private createAsteroids(size: AsteroidSize, count: number = 1, position?: Position) {
+        for (let i = 0; i < count; i++) {
+            const x = position ? position.x : Phaser.Math.Between(0, this.sys.canvas.width);
+            const y = position ? position.y : Phaser.Math.Between(0, this.sys.canvas.height);
+            new Asteroid(this.asteroids, x, y, size);
+        }
     }
 }
 
@@ -145,5 +156,35 @@ const config = {
 export default class MyGame extends Game {
     constructor() {
         super(config);
+    }
+}
+
+enum AsteroidSize {
+    LARGE,
+    MEDIUM,
+    SMALL
+}
+
+class Asteroid extends Phaser.GameObjects.Ellipse {
+    size: AsteroidSize;
+
+    static AsteroidSizeMap = {
+        [AsteroidSize.LARGE]: { diameter: CONSTANTS.ASTEROID_SIZE_LARGE, speed: CONSTANTS.ASTEROID_SPEED_LARGE },
+        [AsteroidSize.MEDIUM]: { diameter: CONSTANTS.ASTEROID_SIZE_MEDIUM, speed: CONSTANTS.ASTEROID_SPEED_MEDIUM },
+        [AsteroidSize.SMALL]: { diameter: CONSTANTS.ASTEROID_SIZE_SMALL, speed: CONSTANTS.ASTEROID_SPEED_SMALL },
+    }
+
+    constructor(group: Phaser.Physics.Arcade.Group, x: number, y: number, size: AsteroidSize) {
+        let diameter = Asteroid.AsteroidSizeMap[size].diameter;
+        let speed = Asteroid.AsteroidSizeMap[size].speed;
+        super(group.scene, x, y, diameter, diameter, 0x00ff00);
+
+        this.size = size;
+
+        group.scene.add.existing(this);
+        group.add(this);
+
+        this.setRotation(Phaser.Math.DegToRad(Phaser.Math.Between(0, 360)));
+        physicsBody(this).setVelocity(Math.sin(this.rotation) * speed, Math.cos(this.rotation) * speed);
     }
 }
