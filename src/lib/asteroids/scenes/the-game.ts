@@ -1,7 +1,7 @@
 
 import { Scene } from "phaser";
 import { ScoreBug } from "../objects/score-bug";
-import { physicsBody, Position } from "../helpers";
+import { physicsBody, Position, randomOutsidePosition } from "../helpers";
 import { CONSTANTS } from "../constants";
 import { Asteroid, AsteroidSize } from "../objects/asteroid";
 import { EndData } from "./end";
@@ -23,6 +23,8 @@ export class TheGame extends Scene {
 
     // scene setup
     create() {
+        console.log("scene size", this.scale.width, this.scale.height);
+
         // input setup
         this.cursorKeys = this.input.keyboard!.createCursorKeys();
 
@@ -137,8 +139,13 @@ export class TheGame extends Scene {
 
     private createAsteroids(size: AsteroidSize, count: number = 1, position?: Position) {
         for (let i = 0; i < count; i++) {
-            const x = position ? position.x : Phaser.Math.Between(0, this.sys.canvas.width);
-            const y = position ? position.y : Phaser.Math.Between(0, this.sys.canvas.height);
+            // const x = position ? position.x : Phaser.Math.Between(0, this.sys.canvas.width);
+            // const y = position ? position.y : Phaser.Math.Between(0, this.sys.canvas.height);
+
+            const { x, y } = position ? position : randomOutsidePosition(this);
+
+            console.log(`Creating asteroid at (${x}, ${y})`);
+
             new Asteroid(this.asteroids, x, y, size);
         }
     }
