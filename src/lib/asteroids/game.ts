@@ -65,8 +65,6 @@ class MyScene extends Scene {
                 body.velocity.x + CONSTANTS.MOVEMENT_SPEED_DELTA * Math.cos(this.player.rotation),
                 body.velocity.y + CONSTANTS.MOVEMENT_SPEED_DELTA * Math.sin(this.player.rotation)
             );
-
-            console.log(body.velocity)
         }
 
         if (this.cursorKeys.right.isDown) {
