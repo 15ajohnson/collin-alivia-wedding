@@ -1,5 +1,6 @@
 
 import { Game, Scene } from "phaser";
+import { CONSTANTS } from "./constants";
 
 const physicsBody = (gameObject: Phaser.GameObjects.GameObject) => {
     if (gameObject.body) {
@@ -30,7 +31,7 @@ class MyScene extends Scene {
         // this.player = this.add.ellipse(400, 300, 50, 50, 0xff0000)
         this.player = this.add.triangle(400, 300, 0, 0, 40, 15, 0, 30, 0x0000ff);
         this.physics.add.existing(this.player);
-        physicsBody(this.player).setMaxSpeed(400);
+        physicsBody(this.player).setMaxSpeed(CONSTANTS.MOVEMENT_MAX_SPEED);
 
         // asteroids
         this.asteroids = this.physics.add.group();
@@ -58,30 +59,21 @@ class MyScene extends Scene {
 
     private move() {
         const body = physicsBody(this.player);
-        const increment = 5;
 
         if (this.cursorKeys.up.isDown) {
-            // body.setVelocityY(body.velocity.y - increment);
-            // body.setAccelerationY()
-            // body
-            // this.player.setRotation()
             body.setVelocity(
-                Math.cos(this.player.rotation) * body.velocity.add
-                    Math.sin(this.player.rotation) * 
-            )
-            console.log(
-                Math.cos(this.player.rotation) * body.velocity.x + increment * Math.cos(this.player.rotation),
-                Math.sin(this.player.rotation) * body.velocity.y + increment * Math.sin(this.player.rotation)
+                body.velocity.x + CONSTANTS.MOVEMENT_SPEED_DELTA * Math.cos(this.player.rotation),
+                body.velocity.y + CONSTANTS.MOVEMENT_SPEED_DELTA * Math.sin(this.player.rotation)
             );
+
+            console.log(body.velocity)
         }
 
-        const rotationDelta = 0.04
         if (this.cursorKeys.right.isDown) {
-            this.player.setRotation(this.player.rotation + rotationDelta);
+            this.player.setRotation(this.player.rotation + CONSTANTS.MOVEMENT_ROTATION_DELTA);
         } else if (this.cursorKeys.left.isDown) {
-            this.player.setRotation(this.player.rotation - rotationDelta);
+            this.player.setRotation(this.player.rotation - CONSTANTS.MOVEMENT_ROTATION_DELTA);
         }
-
     }
 
     private wrapBounds(object: Phaser.GameObjects.Shape) {

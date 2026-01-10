@@ -1,4 +1,4 @@
-import MyGame from "@/lib/game";
+import MyGame from "@/lib/asteroids/game";
 import { Game } from "phaser";
 import { useLayoutEffect, useRef } from "react";
 
