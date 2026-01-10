@@ -21,9 +21,10 @@ class MyScene extends Scene {
     asteroids!: Phaser.Physics.Arcade.Group;
     bullets!: Phaser.Physics.Arcade.Group;
     reloading: boolean = false;
+    scoreBug!: ScoreBug;
 
     constructor() {
-        super({ key: 'MyScene' });
+        super({ key: 'the-game' });
     }
 
     // asset load
@@ -33,6 +34,9 @@ class MyScene extends Scene {
     create() {
         // input setup
         this.cursorKeys = this.input.keyboard!.createCursorKeys();
+
+        // score bug
+        this.scoreBug = new ScoreBug(this, 10, 10, 0);
 
         // player setup
         this.player = this.add.triangle(400, 300, 0, 0, 40, 15, 0, 30, 0x0000ff);
@@ -54,9 +58,13 @@ class MyScene extends Scene {
             } else if (asteroid.size === AsteroidSize.MEDIUM) {
                 this.createAsteroids(AsteroidSize.SMALL, 2, { x: asteroid.x, y: asteroid.y });
             }
+
+            this.scoreBug.addToScore(Asteroid.AsteroidConfigMap[asteroid.size].score);
+
             bullet.destroy();
             asteroid.destroy();
         });
+
     }
 
     // game loop
@@ -168,15 +176,15 @@ enum AsteroidSize {
 class Asteroid extends Phaser.GameObjects.Ellipse {
     size: AsteroidSize;
 
-    static AsteroidSizeMap = {
-        [AsteroidSize.LARGE]: { diameter: CONSTANTS.ASTEROID_SIZE_LARGE, speed: CONSTANTS.ASTEROID_SPEED_LARGE },
-        [AsteroidSize.MEDIUM]: { diameter: CONSTANTS.ASTEROID_SIZE_MEDIUM, speed: CONSTANTS.ASTEROID_SPEED_MEDIUM },
-        [AsteroidSize.SMALL]: { diameter: CONSTANTS.ASTEROID_SIZE_SMALL, speed: CONSTANTS.ASTEROID_SPEED_SMALL },
+    static AsteroidConfigMap = {
+        [AsteroidSize.LARGE]: { diameter: CONSTANTS.ASTEROID_SIZE_LARGE, speed: CONSTANTS.ASTEROID_SPEED_LARGE, score: CONSTANTS.ASTEROID_SCORE_LARGE },
+        [AsteroidSize.MEDIUM]: { diameter: CONSTANTS.ASTEROID_SIZE_MEDIUM, speed: CONSTANTS.ASTEROID_SPEED_MEDIUM, score: CONSTANTS.ASTEROID_SCORE_MEDIUM },
+        [AsteroidSize.SMALL]: { diameter: CONSTANTS.ASTEROID_SIZE_SMALL, speed: CONSTANTS.ASTEROID_SPEED_SMALL, score: CONSTANTS.ASTEROID_SCORE_SMALL },
     }
 
     constructor(group: Phaser.Physics.Arcade.Group, x: number, y: number, size: AsteroidSize) {
-        let diameter = Asteroid.AsteroidSizeMap[size].diameter;
-        let speed = Asteroid.AsteroidSizeMap[size].speed;
+        let diameter = Asteroid.AsteroidConfigMap[size].diameter;
+        let speed = Asteroid.AsteroidConfigMap[size].speed;
         super(group.scene, x, y, diameter, diameter, 0x00ff00);
 
         this.size = size;
@@ -186,5 +194,24 @@ class Asteroid extends Phaser.GameObjects.Ellipse {
 
         this.setRotation(Phaser.Math.DegToRad(Phaser.Math.Between(0, 360)));
         physicsBody(this).setVelocity(Math.sin(this.rotation) * speed, Math.cos(this.rotation) * speed);
+    }
+}
+
+class ScoreBug extends Phaser.GameObjects.Text {
+    score: number;
+
+    static text(score: number) {
+        return `Score: ${score}`;
+    }
+
+    constructor(scene: Phaser.Scene, x: number, y: number, score: number) {
+        super(scene, x, y, ScoreBug.text(score), { font: '24px Arial', color: '#ffffff' });
+        scene.add.existing(this);
+        this.score = score;
+    }
+
+    addToScore(amount: number) {
+        this.score += amount;
+        this.setText(ScoreBug.text(this.score));
     }
 }
