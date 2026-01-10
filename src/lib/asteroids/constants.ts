@@ -3,5 +3,7 @@ export const CONSTANTS = {
     MOVEMENT_SPEED_DELTA: 3, // speed increase per frame when accelerating
     MOVEMENT_MAX_SPEED: 400, // maximum speed
 
-    RELOAD_TIME: 300, // milliseconds between shots
+    BULLET_RELOAD_TIME: 300, // milliseconds between shots
+    BULLET_SPEED: 500, // speed of the bullet
+    BULLET_LIFETIME: 1500, // milliseconds before bullet is destroyed
 }

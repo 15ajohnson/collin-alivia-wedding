@@ -14,6 +14,7 @@ class MyScene extends Scene {
     cursorKeys!: Phaser.Types.Input.Keyboard.CursorKeys;
     player!: Phaser.GameObjects.Triangle;
     asteroids!: Phaser.Physics.Arcade.Group;
+    bullets!: Phaser.Physics.Arcade.Group;
     reloading: boolean = false;
 
     constructor() {
@@ -43,6 +44,15 @@ class MyScene extends Scene {
 
             physicsBody(asteroid).setVelocity(Phaser.Math.Between(-100, 100), Phaser.Math.Between(-100, 100));
         }
+
+        // bullets group
+        this.bullets = this.physics.add.group();
+
+        // collisions
+        this.physics.add.overlap(this.bullets, this.asteroids, (bullet, asteroid) => {
+            bullet.destroy();
+            asteroid.destroy();
+        });
     }
 
     // game loop
@@ -56,24 +66,34 @@ class MyScene extends Scene {
             this.wrapBounds(asteroid as Phaser.GameObjects.Shape);
             return true;
         })
+        this.bullets.children.iterate((bullet) => {
+            this.wrapBounds(bullet as Phaser.GameObjects.Shape);
+            return true;
+        });
     }
 
     private shoot() {
         if (this.cursorKeys.space.isDown && !this.reloading) {
             const bullet = this.add.ellipse(this.player.x, this.player.y, 5, 5, 0xffffff);
+            this.bullets.add(bullet);
             // appear under the player
             bullet.setDepth(-1);
             this.physics.add.existing(bullet);
             bullet.rotation = this.player.rotation;
             physicsBody(bullet).setVelocity(
-                500 * Math.cos(bullet.rotation),
-                500 * Math.sin(bullet.rotation)
+                CONSTANTS.BULLET_SPEED * Math.cos(bullet.rotation),
+                CONSTANTS.BULLET_SPEED * Math.sin(bullet.rotation)
             );
 
             // start reload timer
             this.reloading = true;
-            this.time.delayedCall(CONSTANTS.RELOAD_TIME, () => {
+            this.time.delayedCall(CONSTANTS.BULLET_RELOAD_TIME, () => {
                 this.reloading = false;
+            });
+
+            // destroy bullet after 2 seconds
+            this.time.delayedCall(CONSTANTS.BULLET_LIFETIME, () => {
+                bullet.destroy();
             });
         }
     }
