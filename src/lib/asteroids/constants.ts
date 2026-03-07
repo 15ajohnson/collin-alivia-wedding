@@ -1,5 +1,5 @@
 export const CONSTANTS = {
-    MOVEMENT_ROTATION_DELTA: 0.03, // speed of rotation per frame in radians
+    MOVEMENT_ROTATION_DELTA: 0.06, // speed of rotation per frame in radians
     MOVEMENT_SPEED_DELTA: 3, // speed increase per frame when accelerating
     MOVEMENT_MAX_SPEED: 400, // maximum speed
 
@@ -11,12 +11,18 @@ export const CONSTANTS = {
     ASTEROID_SIZE_LARGE: 100,
     ASTEROID_SIZE_MEDIUM: 50,
     ASTEROID_SIZE_SMALL: 25,
+
     // speed in pixels per second
     ASTEROID_SPEED_LARGE: 100,
     ASTEROID_SPEED_MEDIUM: 150,
     ASTEROID_SPEED_SMALL: 200,
+
     // score for destroying
     ASTEROID_SCORE_LARGE: 20,
     ASTEROID_SCORE_MEDIUM: 50,
     ASTEROID_SCORE_SMALL: 100,
+
+    // player dimensions
+    PLAYER_LENGTH: 40, // nose to tail (like a plane)
+    PLAYER_SPAN: 30, // wingspan (like a plane)
 }

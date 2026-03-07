@@ -5,14 +5,17 @@ import { physicsBody, Position, randomOutsidePosition } from "../helpers";
 import { CONSTANTS } from "../constants";
 import { Asteroid, AsteroidSize } from "../objects/asteroid";
 import { EndData } from "./end";
+import { Player } from "../objects/player";
 
 export class TheGame extends Scene {
     cursorKeys!: Phaser.Types.Input.Keyboard.CursorKeys;
+    pauseKey!: Phaser.Input.Keyboard.Key;
     player!: Phaser.GameObjects.Triangle;
     asteroids!: Phaser.Physics.Arcade.Group;
     bullets!: Phaser.Physics.Arcade.Group;
     reloading: boolean = false;
     scoreBug!: ScoreBug;
+    paused: boolean = false;
 
     constructor() {
         super({ key: 'the-game' });
@@ -27,14 +30,13 @@ export class TheGame extends Scene {
 
         // input setup
         this.cursorKeys = this.input.keyboard!.createCursorKeys();
+        this.pauseKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.P);
 
         // score bug
         this.scoreBug = new ScoreBug(this, 10, 10, 0);
 
         // player setup
-        this.player = this.add.triangle(400, 300, 0, 0, 40, 15, 0, 30, 0x0000ff);
-        this.physics.add.existing(this.player);
-        physicsBody(this.player).setMaxSpeed(CONSTANTS.MOVEMENT_MAX_SPEED);
+        this.player = new Player(this, this.physics, 400, 300);
 
         // asteroids
         this.asteroids = this.physics.add.group();
@@ -58,16 +60,29 @@ export class TheGame extends Scene {
             asteroid.destroy();
         });
 
-        this.physics.add.overlap(this.player, this.asteroids, () => {
-            const endData: EndData = { finalScore: this.scoreBug.getScore() };
-            this.scene.start('end', endData);
-        });
+        this.physics.add.overlap(
+            this.player,
+            this.asteroids,
+            () => {
+                const endData: EndData = { finalScore: this.scoreBug.getScore() };
+                this.scene.start('end', endData);
+            },
+            (playerArg, asteroidArg) => {
+                // phaser types are too broad
+                const player = playerArg as Player;
+                const asteroid = asteroidArg as Asteroid;
+
+                // only trigger if the player actually collides with the asteroid, not just overlaps
+                return Phaser.Geom.Intersects.TriangleToCircle(player.getGeomTriangle(), asteroid.getGeomCircle());
+            }
+        );
     }
 
     // game loop
     update() {
         this.shoot();
         this.move();
+        this.pause();
 
         // when moving off the world bounds, wrap around
         this.wrapBounds(this.player);
@@ -81,8 +96,15 @@ export class TheGame extends Scene {
         });
     }
 
+    private pause() {
+        if (Phaser.Input.Keyboard.JustDown(this.pauseKey)) {
+            this.paused = !this.paused;
+            this.physics.world.isPaused = this.paused;
+        }
+    }
+
     private shoot() {
-        if (this.cursorKeys.space.isDown && !this.reloading) {
+        if (this.cursorKeys.space.isDown && !this.reloading && !this.paused) {
             const bullet = this.add.ellipse(this.player.x, this.player.y, 5, 5, 0xffffff);
             this.bullets.add(bullet);
             // appear under the player
@@ -108,6 +130,10 @@ export class TheGame extends Scene {
     }
 
     private move() {
+        if (this.paused) {
+            return;
+        }
+
         const body = physicsBody(this.player);
 
         if (this.cursorKeys.up.isDown) {
@@ -139,9 +165,6 @@ export class TheGame extends Scene {
 
     private createAsteroids(size: AsteroidSize, count: number = 1, position?: Position) {
         for (let i = 0; i < count; i++) {
-            // const x = position ? position.x : Phaser.Math.Between(0, this.sys.canvas.width);
-            // const y = position ? position.y : Phaser.Math.Between(0, this.sys.canvas.height);
-
             const { x, y } = position ? position : randomOutsidePosition(this);
 
             console.log(`Creating asteroid at (${x}, ${y})`);

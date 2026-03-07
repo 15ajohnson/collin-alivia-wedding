@@ -30,4 +30,8 @@ export class Asteroid extends Phaser.GameObjects.Ellipse {
         this.setRotation(Phaser.Math.DegToRad(Phaser.Math.Between(0, 360)));
         physicsBody(this).setVelocity(Math.sin(this.rotation) * speed, Math.cos(this.rotation) * speed);
     }
+
+    public getGeomCircle(): Phaser.Geom.Circle {
+        return new Phaser.Geom.Circle(this.x, this.y, Asteroid.AsteroidConfigMap[this.size].diameter / 2);
+    }
 }
