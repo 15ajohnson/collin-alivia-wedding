@@ -1,6 +1,18 @@
 import type { Metadata } from "next";
+import { Bona_Nova, Poly } from "next/font/google";
 import "./globals.css";
-import Link from "next/link";
+
+const bonaNova = Bona_Nova({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-bona-nova",
+});
+
+const poly = Poly({
+  subsets: ["latin"],
+  weight: ["400"],
+  variable: "--font-poly",
+});
 
 export const metadata: Metadata = {
   title: "Collin & Alivia",
@@ -14,19 +26,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>
-        <header>
-          <nav>
-            <ul className="flex justify-between items-center p-4 bg-white shadow-md">
-              <li><Link href="#ourstory">Our Story</Link></li>
-              <li><Link href="#rsvp">RSVP</Link></li>
-              <li><Link href="#details">Details</Link></li>
-              <li><Link href="#registry">Registry</Link></li>
-              <li><Link href="/gallery">Gallery</Link></li>
-              <li><Link href="/games">Games</Link></li>
-            </ul>
-          </nav>
-        </header>
+      <body className={`${bonaNova.variable} ${poly.variable}`}>
         {children}
       </body>
     </html>
