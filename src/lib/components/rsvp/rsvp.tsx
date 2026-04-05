@@ -1,6 +1,6 @@
-import { rsvp } from "../actions";
+import { rsvp } from "../../../app/actions";
 
-export default function RSVPPage() {
+export default function RSVPForm() {
     return (
         <div className="container mx-auto p-4">
             <div className="text-center mb-4">

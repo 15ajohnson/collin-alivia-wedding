@@ -18,13 +18,11 @@ export default function RootLayout({
         <header>
           <nav>
             <ul className="flex justify-between items-center p-4 bg-white shadow-md">
-              <li><Link href="/">Home</Link></li>
               <li><Link href="#ourstory">Our Story</Link></li>
-              <li><Link href="/gallery">Gallery</Link></li>
-              <li><Link href="/rsvp">RSVP</Link></li>
-              <li><Link href="#travel">Travel</Link></li>
-              <li><Link href="#whattoknow">What to Know</Link></li>
+              <li><Link href="#rsvp">RSVP</Link></li>
+              <li><Link href="#details">Details</Link></li>
               <li><Link href="#registry">Registry</Link></li>
+              <li><Link href="/gallery">Gallery</Link></li>
               <li><Link href="/games">Games</Link></li>
             </ul>
           </nav>
