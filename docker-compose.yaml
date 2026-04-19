@@ -1,0 +1,6 @@
+
+services:
+  app:
+    image: ghcr.io/collinmurd/wedding:latest
+    ports:
+      - "3002:3002"
