@@ -89,7 +89,7 @@ jobs:
         chmod 600 id_rsa_wedding
     - name: Docker Compose up
       env:
-        HOST: "149.130.209.48"
+        HOST: "163.192.215.50"
       run: |
         ssh -i id_rsa_wedding -o "StrictHostKeyChecking no" wedding@$HOST "
           curl -o docker-compose.yaml https://raw.githubusercontent.com/15ajohnson/collin-alivia-wedding/main/docker-compose.yaml
