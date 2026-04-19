@@ -18,8 +18,8 @@ export class Asteroid extends Phaser.GameObjects.Ellipse {
     }
 
     constructor(group: Phaser.Physics.Arcade.Group, x: number, y: number, size: AsteroidSize) {
-        let diameter = Asteroid.AsteroidConfigMap[size].diameter;
-        let speed = Asteroid.AsteroidConfigMap[size].speed;
+        const diameter = Asteroid.AsteroidConfigMap[size].diameter;
+        const speed = Asteroid.AsteroidConfigMap[size].speed;
         super(group.scene, x, y, diameter, diameter, 0x00ff00);
 
         this.size = size;
