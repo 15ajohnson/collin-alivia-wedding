@@ -37,33 +37,37 @@ export default function Header() {
             </nav>
 
             {/* Center content */}
-            <div className="relative flex-1 flex flex-col items-center justify-center text-center -mt-4 md:-mt-8">
-                <h1
-                    className="text-[4.5rem] md:text-[9rem] font-light leading-none text-[#f5f0e8] tracking-tighter"
-                    style={{ fontFamily: "var(--font-bona-nova)" }}
-                >
-                    COLLIN
-                </h1>
+            <div className="relative flex-1 flex flex-col items-center pb-6 md:pb-12">
+                {/* Names — centered in whatever space remains */}
+                <div className="flex-1 flex flex-col items-center justify-center text-center">
+                    <h1
+                        className="text-[4.5rem] md:text-[9rem] font-light leading-none text-[#f5f0e8] tracking-tighter"
+                        style={{ fontFamily: "var(--font-bona-nova)" }}
+                    >
+                        COLLIN
+                    </h1>
+                    <p
+                        className="text-[4.5rem] md:text-[9rem] font-light leading-none text-[#f5f0e8] -mt-6 md:-mt-16"
+                        style={{ fontFamily: "'Symphony Pro', serif" }}
+                    >
+                        and
+                    </p>
+                    <h1
+                        className="text-[4.5rem] md:text-[9rem] font-light leading-none text-[#f5f0e8] tracking-tighter -mt-4 md:-mt-12"
+                        style={{ fontFamily: "var(--font-bona-nova)" }}
+                    >
+                        ALIVIA
+                    </h1>
+                    <p
+                        className="text-[2rem] md:text-[4.5rem] mt-2 md:mt-4 text-[#f5f0e8]"
+                        style={{ fontFamily: "'Symphony Pro', serif" }}
+                    >
+                        are getting married
+                    </p>
+                </div>
+                {/* Date — always anchored to the bottom of the image */}
                 <p
-                    className="text-[4.5rem] md:text-[9rem] font-light leading-none text-[#f5f0e8] -mt-6 md:-mt-16"
-                    style={{ fontFamily: "'Symphony Pro', serif" }}
-                >
-                    and
-                </p>
-                <h1
-                    className="text-[4.5rem] md:text-[9rem] font-light leading-none text-[#f5f0e8] tracking-tighter -mt-4 md:-mt-12"
-                    style={{ fontFamily: "var(--font-bona-nova)" }}
-                >
-                    ALIVIA
-                </h1>
-                <p
-                    className="text-[2rem] md:text-[4.5rem] mt-2 md:mt-4 text-[#f5f0e8]"
-                    style={{ fontFamily: "'Symphony Pro', serif" }}
-                >
-                    are getting married
-                </p>
-                <p
-                    className="text-[1.1rem] md:text-[2rem] tracking-[0.4em] mt-8 md:mt-50 text-[#f5f0e8] font-light"
+                    className="text-[1.1rem] md:text-[2rem] tracking-[0.4em] text-[#f5f0e8] font-light"
                     style={{ fontFamily: "var(--font-poly)" }}
                 >
                     09.12.2026
