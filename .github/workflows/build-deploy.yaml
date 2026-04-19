@@ -63,7 +63,7 @@ jobs:
       uses: docker/metadata-action@v5
       with:
         images: |
-          ghcr.io/collinmurd/wedding
+          ghcr.io/15ajohnson/wedding
         tags: |
           type=raw,value=${{ steps.calver.outputs.tag }}
           type=raw,value=latest,enable={{is_default_branch}}
