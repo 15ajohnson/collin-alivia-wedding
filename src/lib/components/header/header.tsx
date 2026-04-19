@@ -1,6 +1,16 @@
 
 import Link from "next/link";
 
+const comingSoon = process.env.NEXT_PUBLIC_COMING_SOON === "true";
+
+const HEADERS = comingSoon ? [] : [
+    ["OUR STORY", "#ourstory"],
+    ["RSVP", "#rsvp"],
+    ["HOME", "/"],
+    ["DETAILS", "#details"],
+    ["REGISTRY", "#registry"],
+];
+
 export default function Header() {
     return (
         <div
@@ -14,13 +24,7 @@ export default function Header() {
 
             {/* Nav */}
             <nav className="relative z-10 flex justify-center gap-16 pt-10 pb-6">
-                {[
-                    ["OUR STORY", "#ourstory"],
-                    ["RSVP", "#rsvp"],
-                    ["HOME", "/"],
-                    ["DETAILS", "#details"],
-                    ["REGISTRY", "#registry"],
-                ].map(([label, href]) => (
+                {HEADERS.map(([label, href]) => (
                     <Link
                         key={label}
                         href={href}
