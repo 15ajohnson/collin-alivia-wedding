@@ -1,0 +1,41 @@
+---
+alt: "Revised RSVP entity-relationship diagram with named attendees, plus-one support, and per-person meal selection"
+---
+erDiagram
+    accTitle: RSVP Data Model (Revised — Named Attendees)
+    accDescr: Entity-relationship diagram for the wedding RSVP feature. RESERVATION and RESERVATION_MEMBER are operator-seeded. RSVP and RSVP_ATTENDEE are guest-submitted.
+
+    RESERVATION {
+        int     id                        PK
+        varchar last_name                 "indexed; used for lookup"
+        varchar display_name              "e.g. 'The Smith Family'"
+        tinyint max_seats                 "total allocated seats incl. plus-one slot"
+        boolean rehearsal_dinner_invited  "static flag set at seeding time"
+    }
+
+    RESERVATION_MEMBER {
+        int     id             PK
+        int     reservation_id FK
+        varchar first_name     "known at seeding time; all household members except plus-ones"
+    }
+
+    RSVP {
+        int       id                          PK
+        int       reservation_id              FK  "UNIQUE — one RSVP per reservation"
+        boolean   rehearsal_dinner_attending  "NULL when not invited"
+        timestamp submitted_at
+    }
+
+    RSVP_ATTENDEE {
+        int     id                     PK
+        int     rsvp_id                FK
+        int     reservation_member_id  FK  "NULL when row represents a plus-one"
+        varchar plus_one_name          "NULL unless reservation_member_id is NULL"
+        varchar meal_choice            "one of 3 configured options"
+        text    dietary_restrictions   "nullable; per-person free-text"
+    }
+
+    RESERVATION        ||--o{ RESERVATION_MEMBER : "has members"
+    RESERVATION        ||--o|  RSVP              : "submits"
+    RSVP               ||--o{ RSVP_ATTENDEE      : "attends"
+    RESERVATION_MEMBER ||--o|  RSVP_ATTENDEE     : "identified as"
