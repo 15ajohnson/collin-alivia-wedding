@@ -8,7 +8,61 @@ The existing RSVP form (a single name + checkbox → Google Sheets append) is be
 
 ## 2. High-Level User Flow
 
-```mermaid src="./diagrams/rsvp_user_flow.mmd" alt="Revised RSVP user flow sequence diagram with named member selection, plus-one entry, and per-person meal selection"```
+```mermaid
+sequenceDiagram
+    accTitle: RSVP User Flow (Revised — Named Attendees)
+    accDescr: Sequence of interactions between the guest browser, Next.js server actions, and the database during an RSVP submission with named attendee and per-person meal selection support
+
+    actor Guest
+    participant UI as RSVP Form (Next.js)
+    participant SA as Server Action
+    participant DB as Database
+
+    Guest->>UI: Enter last name
+    UI->>SA: lookupReservation(lastName)
+    SA->>DB: SELECT * FROM reservation WHERE last_name = ?
+    DB-->>SA: 0..N reservation rows
+    alt No results
+        SA-->>UI: "Not found" message
+    else Multiple results
+        SA-->>UI: Disambiguation list (display_name options)
+        Guest->>UI: Select correct reservation
+    end
+
+    SA->>DB: SELECT id FROM rsvp WHERE reservation_id = ?
+    alt RSVP already submitted
+        SA-->>UI: "Already submitted" message
+        note over SA,DB: No further writes permitted
+    else Past deadline
+        SA-->>UI: "RSVP closed" message
+    else Open
+        SA->>DB: SELECT * FROM reservation_member WHERE reservation_id = ?
+        DB-->>SA: Named member list
+        SA-->>UI: Reservation detail (named members, max_seats, rehearsal_dinner_invited)
+    end
+
+    note over Guest,UI: Guest selects which named members are attending (checkboxes)
+    opt max_seats > known_member_count (plus-one slot exists)
+        Guest->>UI: Enter plus-one name (if bringing)
+    end
+
+    note over Guest,UI: For each attending person (named + plus-one)
+    Guest->>UI: Select meal_choice per attendee
+    Guest->>UI: Enter dietary_restrictions per attendee (optional)
+
+    opt rehearsal_dinner_invited = true
+        Guest->>UI: Select rehearsal_dinner_attending (whole party)
+    end
+
+    Guest->>UI: Submit
+    UI->>SA: submitRsvp(reservationId, attendees[], rehearsalDinnerAttending?)
+    SA->>DB: INSERT INTO rsvp (reservation_id, rehearsal_dinner_attending, submitted_at)
+    loop For each attendee
+        SA->>DB: INSERT INTO rsvp_attendee (rsvp_id, reservation_member_id | plus_one_name, meal_choice, dietary_restrictions)
+    end
+    DB-->>SA: OK
+    SA-->>UI: Confirmation screen
+```
 
 Key behavioral constraints derived from requirements:
 
@@ -26,7 +80,46 @@ Key behavioral constraints derived from requirements:
 
 ## 3. Data Model
 
-```mermaid src="./diagrams/rsvp_data_model.mmd" alt="Revised RSVP feature entity-relationship diagram with named attendees"```
+```mermaid
+erDiagram
+    accTitle: RSVP Data Model (Revised — Named Attendees)
+    accDescr: Entity-relationship diagram for the wedding RSVP feature. RESERVATION and RESERVATION_MEMBER are operator-seeded. RSVP and RSVP_ATTENDEE are guest-submitted.
+
+    RESERVATION {
+        int     id                        PK
+        varchar last_name                 "indexed; used for lookup"
+        varchar display_name              "e.g. 'The Smith Family'"
+        tinyint max_seats                 "total allocated seats incl. plus-one slot"
+        boolean rehearsal_dinner_invited  "static flag set at seeding time"
+    }
+
+    RESERVATION_MEMBER {
+        int     id             PK
+        int     reservation_id FK
+        varchar first_name     "known at seeding time; all household members except plus-ones"
+    }
+
+    RSVP {
+        int       id                          PK
+        int       reservation_id              FK  "UNIQUE — one RSVP per reservation"
+        boolean   rehearsal_dinner_attending  "NULL when not invited"
+        timestamp submitted_at
+    }
+
+    RSVP_ATTENDEE {
+        int     id                     PK
+        int     rsvp_id                FK
+        int     reservation_member_id  FK  "NULL when row represents a plus-one"
+        varchar plus_one_name          "NULL unless reservation_member_id is NULL"
+        varchar meal_choice            "one of 3 configured options"
+        text    dietary_restrictions   "nullable; per-person free-text"
+    }
+
+    RESERVATION        ||--o{ RESERVATION_MEMBER : "has members"
+    RESERVATION        ||--o|  RSVP              : "submits"
+    RSVP               ||--o{ RSVP_ATTENDEE      : "attends"
+    RESERVATION_MEMBER ||--o|  RSVP_ATTENDEE     : "identified as"
+```
 
 ### 3.1 Entity Descriptions
 
