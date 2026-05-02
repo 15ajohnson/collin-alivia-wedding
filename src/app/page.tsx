@@ -14,12 +14,17 @@ export default function Home() {
       {comingSoon ? (
         <ComingSoon />
       ) : (
-        <>
+        <div
+          style={{
+            backgroundColor: "#F2E8DF",
+            backgroundImage: "url('/noise-bg.svg')",
+          }}
+        >
           <OurStory />
           <Details />
           <RSVPForm />
           <Registry />
-        </>
+        </div>
       )}
     </div>
   );
