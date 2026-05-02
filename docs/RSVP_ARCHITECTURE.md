@@ -225,7 +225,74 @@ If a future iteration adds an admin dashboard, concurrent multi-instance deploym
 
 ---
 
-## 6. TBD / Information Requested
+## 6. Data Resiliency
+
+Losing RSVP data is unacceptable. The tactics below form a defense-in-depth strategy with four independent recovery layers, ordered from innermost (write-level) to outermost (off-instance backup).
+
+```mermaid
+---
+alt: "SQLite resiliency layers diagram showing defense-in-depth from WAL mode through OCI Block Volume Backups"
+---
+flowchart TD
+    accTitle: SQLite Resiliency Layers
+    accDescr: Defense-in-depth diagram for self-managed SQLite on OCI, showing four independent recovery paths from write-level crash safety through off-instance backups
+
+    App["Next.js Container"]
+
+    subgraph Instance["OCI Compute Instance"]
+        WAL["WAL Mode\n(crash-safe writes)"]
+        Integrity["Startup integrity_check\n(detect corruption early)"]
+        NamedVol["Named Docker Volume\n(no accidental wipe on redeploy)"]
+    end
+
+    subgraph BlockVol["OCI Block Volume (separate from boot)"]
+        DBFile["wedding.db\n(replicated within Availability Domain)"]
+    end
+
+    subgraph OCI["OCI Managed Services"]
+        BVBackup["Block Volume Backup Policy\n(daily snapshot, OCI-managed)"]
+        ObjStorage["Object Storage Backup\n(periodic .backup copy, Always Free tier)"]
+    end
+
+    App --> WAL --> DBFile
+    App --> Integrity
+    NamedVol --> DBFile
+    DBFile --> BVBackup
+    DBFile -->|"scheduled backup script"| ObjStorage
+
+```
+
+### 6.1 Tactic Summary
+
+| Layer | Tactic | Protects Against |
+| :--- | :--- | :--- |
+| **1 — Write safety** | Enable SQLite WAL mode | Crash or container restart mid-write corrupting the database file |
+| **2 — Startup guard** | Run `PRAGMA integrity_check` on app startup; fail fast if result ≠ `ok` | Silent corruption being compounded by further writes |
+| **3 — Volume safety** | Use a named Docker volume backed by an **OCI Block Volume** (separate from the boot volume); declare the volume `external: true` in Docker Compose | Instance reprovisioning, accidental `docker-compose down -v`, boot volume wipe |
+| **4 — Off-instance backup** | Periodic script copies the database to **OCI Object Storage** using SQLite's `.backup` command (not raw file copy) | Accidental deletion, botched deployment, volume-level corruption |
+| **4b — OCI snapshot** | Enable an **OCI Block Volume Backup Policy** (daily) | Independent second recovery path requiring no scripting |
+
+### 6.2 Backup Cadence
+
+| Window | Recommended Frequency |
+| :--- | :--- |
+| Active RSVP period | Every 15–30 minutes to Object Storage |
+| Outside RSVP period | Daily (aligned with Block Volume backup policy) |
+
+### 6.3 Key Configuration Notes
+
+- The Block Volume must be **attached separately** from the boot volume. A terminated compute instance destroys its boot volume by default.
+- Docker Compose must declare the volume as `external: true` so that `docker-compose down` (with or without `-v`) cannot destroy it silently.
+- The `.backup` SQLite API command is safe to run against a live database; a raw `cp` is not — it can produce a torn copy if a write is in flight.
+- OCI Object Storage has a 20 GB Always Free tier — more than sufficient for this dataset indefinitely.
+
+### 6.4 What Is Not Needed
+
+Replication, standby failover, or a hot backup agent are unnecessary at this scale. The four layers above provide multiple independent recovery paths with near-zero operational overhead and no meaningful additional cost.
+
+---
+
+## 7. TBD / Information Requested
 
 - **TBD-1**: The 3 meal choice option labels — needed to finalize `meal_choice` column values (enum or check constraint).
 - **TBD-2**: Seeding mechanism — will records be imported via a one-time migration script from the existing spreadsheet, or entered through a manual SQL process? This affects whether a seed script (including `RESERVATION_MEMBER` rows) needs to be part of the deliverable.
