@@ -1,4 +1,4 @@
-import { addRsvp, parseRsvp } from "@/lib/rsvp";
+import { addRsvp, parseRsvp } from "@/lib/actions/google-rsvp";
 import { google, sheets_v4 } from "googleapis";
 import { describe, expect, test, vi, afterEach } from "vitest";
 

@@ -1,6 +1,6 @@
 "use server"
 
-import { addRsvp, parseRsvp } from "@/lib/rsvp";
+import { addRsvp, parseRsvp } from "@/lib/actions/google-rsvp";
 
 export async function rsvp(rsvp: FormData) {
     console.log("RSVP received:", rsvp);
