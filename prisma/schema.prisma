@@ -1,0 +1,58 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Reservation {
+  id                     Int                 @id @default(autoincrement())
+  lastName               String              @map("last_name")
+  displayName            String              @map("display_name")
+  maxSeats               Int                 @map("max_seats")
+  rehearsalDinnerInvited Boolean             @map("rehearsal_dinner_invited")
+  members                ReservationMember[]
+  rsvp                   Rsvp?
+
+  @@index([lastName])
+  @@map("reservation")
+}
+
+model ReservationMember {
+  id            Int           @id @default(autoincrement())
+  reservationId Int           @map("reservation_id")
+  firstName     String        @map("first_name")
+  reservation   Reservation   @relation(fields: [reservationId], references: [id])
+  rsvpAttendee  RsvpAttendee?
+
+  @@map("reservation_member")
+}
+
+model Rsvp {
+  id                       Int            @id @default(autoincrement())
+  reservationId            Int            @unique @map("reservation_id")
+  rehearsalDinnerAttending Boolean?       @map("rehearsal_dinner_attending")
+  submittedAt              DateTime       @default(now()) @map("submitted_at")
+  reservation              Reservation    @relation(fields: [reservationId], references: [id])
+  attendees                RsvpAttendee[]
+
+  @@map("rsvp")
+}
+
+model RsvpAttendee {
+  id                  Int                @id @default(autoincrement())
+  rsvpId              Int                @map("rsvp_id")
+  reservationMemberId Int?               @unique @map("reservation_member_id")
+  plusOneName         String?            @map("plus_one_name")
+  mealChoice          String             @map("meal_choice")
+  dietaryRestrictions String?            @map("dietary_restrictions")
+  rsvp                Rsvp               @relation(fields: [rsvpId], references: [id])
+  reservationMember   ReservationMember? @relation(fields: [reservationMemberId], references: [id])
+
+  @@map("rsvp_attendee")
+}
