@@ -1,9 +1,9 @@
-import Details from "@/lib/components/details/details";
-import Header from "@/lib/components/header/header";
-import OurStory from "@/lib/components/ourstory/ourstory";
-import Registry from "@/lib/components/registry/registry";
-import RSVPForm from "@/lib/components/rsvp/rsvp";
-import ComingSoon from "@/lib/components/comingsoon/comingsoon";
+import Details from "@/components/details/details";
+import Header from "@/components/header/header";
+import OurStory from "@/components/ourstory/ourstory";
+import Registry from "@/components/registry/registry";
+import RSVPForm from "@/components/rsvp/rsvp";
+import ComingSoon from "@/components/comingsoon/comingsoon";
 
 const comingSoon = process.env.NEXT_PUBLIC_COMING_SOON === "true";
 

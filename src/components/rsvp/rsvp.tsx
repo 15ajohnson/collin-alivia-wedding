@@ -1,4 +1,4 @@
-import { rsvp } from "../../../app/actions";
+import { rsvp } from "../../app/actions";
 
 export default function RSVPForm() {
     return (
