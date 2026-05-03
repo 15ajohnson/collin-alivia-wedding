@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
-import { Bona_Nova, Poly } from "next/font/google";
+import { Bona_Nova, Poly, Geist } from "next/font/google";
 import "./globals.css";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const bonaNova = Bona_Nova({
   subsets: ["latin"],
@@ -25,7 +28,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={cn("font-sans", geist.variable)}>
       <body className={`${bonaNova.variable} ${poly.variable}`}>
         {children}
       </body>
