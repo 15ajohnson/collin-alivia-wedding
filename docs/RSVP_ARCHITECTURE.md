@@ -38,12 +38,12 @@ sequenceDiagram
     else Open
         SA->>DB: SELECT * FROM reservation_member WHERE reservation_id = ?
         DB-->>SA: Named member list
-        SA-->>UI: Reservation detail (named members, max_seats, rehearsal_dinner_invited)
+        SA-->>UI: Reservation detail (named members w/ has_plus_one flags, rehearsal_dinner_invited)
     end
 
     note over Guest,UI: Guest selects which named members are attending (checkboxes)
-    opt max_seats > known_member_count (plus-one slot exists)
-        Guest->>UI: Enter plus-one name (if bringing)
+    loop For each attending member where has_plus_one = true
+        Guest->>UI: Optionally enter plus-one name for that specific member
     end
 
     note over Guest,UI: For each attending person (named + plus-one)
@@ -58,7 +58,7 @@ sequenceDiagram
     UI->>SA: submitRsvp(reservationId, attendees[], rehearsalDinnerAttending?)
     SA->>DB: INSERT INTO rsvp (reservation_id, rehearsal_dinner_attending, submitted_at)
     loop For each attendee
-        SA->>DB: INSERT INTO rsvp_attendee (rsvp_id, reservation_member_id | plus_one_name, meal_choice, dietary_restrictions)
+        SA->>DB: INSERT INTO rsvp_attendee (rsvp_id, reservation_member_id | plus_one_name | brought_by_member_id, meal_choice, dietary_restrictions)
     end
     DB-->>SA: OK
     SA-->>UI: Confirmation screen
@@ -73,7 +73,7 @@ Key behavioral constraints derived from requirements:
 | Rehearsal dinner | Flag lives on `RESERVATION`; only shown in the form when `rehearsal_dinner_invited = true`. If attending, the **entire reservation** attends — no per-seat split |
 | Last name collision | Lookup returns all matching `RESERVATION` rows; guest selects via `display_name` |
 | Full decline | Guest deselects all named members; no `RSVP_ATTENDEE` rows are stored |
-| Named members | Pre-seeded for all known household members; plus-one name is entered by the guest at RSVP time |
+| Plus-one allocation | `has_plus_one` flag on `RESERVATION_MEMBER` determines which individuals may bring a plus-one; the plus-one name input is rendered inline next to that specific person |
 | Per-person meal | Each attending `RSVP_ATTENDEE` row carries its own `meal_choice` and `dietary_restrictions` to support named place cards |
 
 ---
@@ -89,7 +89,6 @@ erDiagram
         int     id                        PK
         varchar last_name                 "indexed; used for lookup"
         varchar display_name              "e.g. 'The Smith Family'"
-        tinyint max_seats                 "total allocated seats incl. plus-one slot"
         boolean rehearsal_dinner_invited  "static flag set at seeding time"
     }
 
@@ -97,6 +96,7 @@ erDiagram
         int     id             PK
         int     reservation_id FK
         varchar first_name     "known at seeding time; all household members except plus-ones"
+        boolean has_plus_one   "true when this individual is allocated a plus-one seat"
     }
 
     RSVP {
@@ -110,7 +110,8 @@ erDiagram
         int     id                     PK
         int     rsvp_id                FK
         int     reservation_member_id  FK  "NULL when row represents a plus-one"
-        varchar plus_one_name          "NULL unless reservation_member_id is NULL"
+        varchar plus_one_name          "NULL for named member rows; required for plus-one rows"
+        int     brought_by_member_id   FK  "NULL for named member rows; member who brought this plus-one"
         varchar meal_choice            "one of 3 configured options"
         text    dietary_restrictions   "nullable; per-person free-text"
     }
@@ -119,6 +120,7 @@ erDiagram
     RESERVATION        ||--o|  RSVP              : "submits"
     RSVP               ||--o{ RSVP_ATTENDEE      : "attends"
     RESERVATION_MEMBER ||--o|  RSVP_ATTENDEE     : "identified as"
+    RESERVATION_MEMBER ||--o{ RSVP_ATTENDEE      : "brings plus-one"
 ```
 
 ### 3.1 Entity Descriptions
@@ -130,7 +132,6 @@ erDiagram
 | `id` | INT PK | Surrogate key |
 | `last_name` | VARCHAR | **Indexed**. Case-insensitive lookup surface |
 | `display_name` | VARCHAR | Human-readable disambiguation label, e.g. `"The Smith Family"` or `"John & Jane Smith"` |
-| `max_seats` | TINYINT | Total allocated seats including any plus-one slot |
 | `rehearsal_dinner_invited` | BOOLEAN | Static flag; set at seeding time |
 
 > **Why it matters**: `RESERVATION` is the pre-seeded source of truth. Guests cannot create or modify it — they can only submit an `RSVP` against it. This prevents fraudulent or typo-driven records.
@@ -144,8 +145,9 @@ erDiagram
 | `id` | INT PK | Surrogate key |
 | `reservation_id` | INT FK | Parent reservation |
 | `first_name` | VARCHAR | Known at seeding time. Last name is inherited from `RESERVATION`. |
+| `has_plus_one` | BOOLEAN | `true` when this specific individual is allocated a plus-one seat. Default `false`. |
 
-> **Why it matters**: Pre-seeding named members drives the form's per-person UI — guests see checkboxes with real names rather than anonymous seat numbers. This is what enables named place cards at the plated dinner. Plus-one slots are intentionally **not** pre-seeded; a plus-one `RSVP_ATTENDEE` row is created at submission time instead.
+> **Why it matters**: Pre-seeding named members drives the form's per-person UI — guests see checkboxes with real names rather than anonymous seat numbers. This is what enables named place cards at the plated dinner. The `has_plus_one` flag places the plus-one name input inline with the specific person who may bring a guest, rather than offering a generic group-level slot. Plus-one `RSVP_ATTENDEE` rows are created at submission time, not pre-seeded.
 
 ---
 
@@ -169,11 +171,12 @@ erDiagram
 | `id` | INT PK | Surrogate key |
 | `rsvp_id` | INT FK | Parent RSVP |
 | `reservation_member_id` | INT FK | `NULL` when this row represents a plus-one |
-| `plus_one_name` | VARCHAR | `NULL` unless `reservation_member_id` is `NULL`. Required for plus-one rows. |
+| `plus_one_name` | VARCHAR | `NULL` for named member rows. Required for plus-one rows. |
+| `brought_by_member_id` | INT FK | `NULL` for named member rows. References the `RESERVATION_MEMBER` who is bringing this plus-one. |
 | `meal_choice` | VARCHAR | One of 3 configured options (TBD) |
 | `dietary_restrictions` | TEXT | Nullable; per-person free-text |
 
-> **Why it matters**: Tying a meal choice and dietary restrictions to a named individual (via `reservation_member_id`) or a named plus-one (via `plus_one_name`) gives the caterer and seating coordinator everything needed to produce accurate place cards. The mutual exclusivity of `reservation_member_id` / `plus_one_name` is enforced via a CHECK constraint: exactly one must be non-null.
+> **Why it matters**: Tying a meal choice and dietary restrictions to a named individual (via `reservation_member_id`) or a named plus-one (via `plus_one_name`) gives the caterer and seating coordinator everything needed to produce accurate place cards. `brought_by_member_id` links each plus-one back to the specific member who brought them, enabling the UI to render the plus-one input inline with that person. Two CHECK constraints apply: (1) exactly one of `reservation_member_id` or `plus_one_name` must be non-null; (2) `brought_by_member_id` must be non-null if and only if `reservation_member_id` is null.
 
 ---
 
@@ -217,11 +220,12 @@ If a future iteration adds an admin dashboard, concurrent multi-instance deploym
 
 | Interface | Direction | Shape |
 | :--- | :--- | :--- |
-| `lookupReservation(lastName)` | Browser → Server Action | Input: `string`; Output: `{ id, displayName, maxSeats, rehearsalDinnerInvited, members: { id, firstName }[] }[]` |
-| `submitRsvp(reservationId, payload)` | Browser → Server Action | Input: `{ reservationId, rehearsalDinnerAttending?, attendees: { reservationMemberId?, plusOneName?, mealChoice, dietaryRestrictions? }[] }`; Output: success or typed error |
+| `lookupReservation(lastName)` | Browser → Server Action | Input: `string`; Output: `{ id, displayName, rehearsalDinnerInvited, members: { id, firstName, hasPlus_one }[] }[]` |
+| `submitRsvp(reservationId, payload)` | Browser → Server Action | Input: `{ reservationId, rehearsalDinnerAttending?, attendees: { reservationMemberId?, plusOneName?, broughtByMemberId?, mealChoice, dietaryRestrictions? }[] }`; Output: success or typed error |
 | RSVP deadline | Server-side config | Environment variable `RSVP_DEADLINE` (ISO date string); checked in Server Action before any write |
 | Duplicate guard | Database constraint | `UNIQUE(reservation_id)` on `RSVP` table — constraint violation surfaced as "already submitted" to the user |
-| Plus-one integrity | Database CHECK constraint | On `RSVP_ATTENDEE`: exactly one of `reservation_member_id` or `plus_one_name` must be non-null |
+| Plus-one integrity | Database CHECK constraints | On `RSVP_ATTENDEE`: (1) exactly one of `reservation_member_id` or `plus_one_name` must be non-null; (2) `brought_by_member_id` must be non-null if and only if `reservation_member_id` is null |
+| Plus-one eligibility | Server Action validation | Server Action verifies that `broughtByMemberId` references a `RESERVATION_MEMBER` with `has_plus_one = true` before inserting |
 
 ---
 
