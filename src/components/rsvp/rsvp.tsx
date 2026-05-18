@@ -641,7 +641,7 @@ export default function RSVPForm() {
                             <p className="text-sm text-muted-foreground">
                                 We already have an RSVP on file for your
                                 reservation. If you need to make a change,
-                                please reach out to us directly.
+                                please text Collin directly at 440-865-9314.
                             </p>
                             <DialogFooter>
                                 <Button
