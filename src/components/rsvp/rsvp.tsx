@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 import {
     MEAL_CHOICES,
@@ -56,7 +57,7 @@ function buildAttendeeState(reservation: MockReservation): AttendeeState[] {
         memberId: m.id,
         firstName: m.firstName,
         hasPlus_one: m.hasPlus_one,
-        attending: true,
+        attending: false,
         mealChoice: "",
         dietaryRestrictions: "",
         plusOneName: "",
@@ -192,21 +193,33 @@ function AttendeeRow({
 
     return (
         <div className="flex flex-col gap-3 rounded-lg border p-3">
-            {/* Attending checkbox */}
-            <div className="flex items-center gap-2">
-                <Checkbox
-                    id={`member-${attendee.memberId}`}
-                    checked={attendee.attending}
-                    onCheckedChange={(checked) =>
-                        onChange({ attending: checked === true })
-                    }
-                />
-                <Label
-                    htmlFor={`member-${attendee.memberId}`}
-                    className="font-medium"
+            {/* Attending yes/no */}
+            <div className="flex items-center justify-between gap-3">
+                <Label className="font-medium">{attendee.firstName}</Label>
+                <ToggleGroup
+                    type="single"
+                    value={attendee.attending ? "yes" : "no"}
+                    onValueChange={(value: string) => {
+                        if (!value) return;
+                        onChange({ attending: value === "yes" });
+                    }}
+                    className="gap-1"
                 >
-                    {attendee.firstName}
-                </Label>
+                    <ToggleGroupItem
+                        value="yes"
+                        aria-label={`Mark ${attendee.firstName} attending`}
+                        className="h-8 min-w-14"
+                    >
+                        Yes
+                    </ToggleGroupItem>
+                    <ToggleGroupItem
+                        value="no"
+                        aria-label={`Mark ${attendee.firstName} not attending`}
+                        className="h-8 min-w-14"
+                    >
+                        No
+                    </ToggleGroupItem>
+                </ToggleGroup>
             </div>
 
             {attendee.attending && (
