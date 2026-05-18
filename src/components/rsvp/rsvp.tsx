@@ -36,9 +36,10 @@ interface Eater {
 
 type AttendeeState = Eater & {
     memberId: number;
-    hasPlus_one: boolean;
+    plusOneAvailable: boolean;
     attending: boolean;
-    plusOne: Eater | null;
+    plusOneSelected: boolean;
+    plusOne: Eater;
 }
 
 type Step =
@@ -57,11 +58,12 @@ function buildAttendeeState(reservation: MockReservation): AttendeeState[] {
     return reservation.members.map((m) => ({
         memberId: m.id,
         name: m.firstName,
-        hasPlus_one: m.hasPlus_one,
+        plusOneAvailable: m.hasPlus_one,
         attending: false,
         mealChoice: "",
         dietaryRestrictions: "",
-        plusOne: null,
+        plusOneSelected: false,
+        plusOne: { name: "", mealChoice: "", dietaryRestrictions: "" },
     }));
 }
 
@@ -294,14 +296,14 @@ function AttendeeRow({
                     <MealSelection eater={attendee} onChange={(update) => eaterOnChange(false, update)} />
 
                     {/* Plus-one */}
-                    {attendee.hasPlus_one && (
+                    {attendee.plusOneAvailable && (
                         <>
                             <div className="flex items-center gap-2">
                                 <Checkbox
                                     id={`plusone-${attendee.memberId}`}
-                                    checked={attendee.plusOne !== null}
+                                    checked={attendee.plusOneSelected}
                                     onCheckedChange={(checked) =>
-                                        onChange({ plusOne: checked === true ? (attendee.plusOne ?? { name: "", mealChoice: "", dietaryRestrictions: "" }) : null })
+                                        onChange({ plusOneSelected: checked === true })
                                     }
                                 />
                                 <Label
@@ -311,7 +313,8 @@ function AttendeeRow({
                                     Bringing a plus-one?
                                 </Label>
                             </div>
-                            {attendee.plusOne !== null && (
+
+                            {(attendee.plusOneSelected && attendee.plusOne) && (
                                 <div className="flex flex-col gap-3 rounded-md border border-dashed p-2.5">
                                     <div className="flex flex-col gap-1.5">
                                         <Label
@@ -377,8 +380,7 @@ function DetailsStep({
     const isValid = attendees.every((a) => {
         if (!a.attending) return true;
         if (!a.mealChoice) return false;
-        if (a.plusOne && a.plusOne?.name.trim() !== "" && !a.plusOne?.mealChoice)
-            return false;
+        if (a.plusOneSelected && a.plusOne && (a.plusOne.name.trim() === "" || !a.plusOne.mealChoice)) return false;
         return true;
     });
 
