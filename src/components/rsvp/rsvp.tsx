@@ -28,16 +28,17 @@ import {
 // Types
 // ---------------------------------------------------------------------------
 
-interface AttendeeState {
-    memberId: number;
-    firstName: string;
-    hasPlus_one: boolean;
-    attending: boolean;
+interface Eater {
+    name: string;
     mealChoice: MealChoice | "";
     dietaryRestrictions: string;
-    plusOneName: string;
-    plusOneMealChoice: MealChoice | "";
-    plusOneDietaryRestrictions: string;
+}
+
+type AttendeeState = Eater & {
+    memberId: number;
+    hasPlus_one: boolean;
+    attending: boolean;
+    plusOne: Eater | null;
 }
 
 type Step =
@@ -55,14 +56,12 @@ type Step =
 function buildAttendeeState(reservation: MockReservation): AttendeeState[] {
     return reservation.members.map((m) => ({
         memberId: m.id,
-        firstName: m.firstName,
+        name: m.firstName,
         hasPlus_one: m.hasPlus_one,
         attending: false,
         mealChoice: "",
         dietaryRestrictions: "",
-        plusOneName: "",
-        plusOneMealChoice: "",
-        plusOneDietaryRestrictions: "",
+        plusOne: null,
     }));
 }
 
@@ -179,6 +178,74 @@ function DisambiguateStep({
     );
 }
 
+function MealSelection({
+    eater,
+    onChange,
+}: {
+    eater: Eater;
+    onChange: (updated: Partial<Eater>) => void;
+}) {
+
+    const id = (name: string) => name.replace(/\s+/g, "-").toLowerCase();
+
+    return (
+        <>
+            {/* Meal choice */}
+            <div className="flex flex-col gap-1.5">
+                <Label className="text-xs text-muted-foreground">
+                    Meal selection
+                </Label>
+                <RadioGroup
+                    value={eater.mealChoice ?? ""}
+                    onValueChange={(val) =>
+                        onChange({ mealChoice: val as MealChoice })
+                    }
+                    className="flex flex-col gap-1"
+                >
+                    {MEAL_CHOICES.map((choice) => (
+                        <div
+                            key={choice}
+                            className="flex items-center gap-2"
+                        >
+                            <RadioGroupItem
+                                value={choice}
+                                id={`meal-${id(eater.name)}-${choice}`}
+                            />
+                            <Label
+                                htmlFor={`meal-${id(eater.name)}-${choice}`}
+                                className="text-sm font-normal"
+                            >
+                                {choice}
+                            </Label>
+                        </div>
+                    ))}
+                </RadioGroup>
+            </div>
+
+            {/* Dietary restrictions */}
+            <div className="flex flex-col gap-1.5">
+                <Label
+                    htmlFor={`dietary-${id(eater.name)}`}
+                    className="text-xs text-muted-foreground"
+                >
+                    Dietary restrictions{" "}
+                    <span className="font-normal">(optional)</span>
+                </Label>
+                <Input
+                    id={`dietary-${id(eater.name)}`}
+                    value={eater.dietaryRestrictions}
+                    onChange={(e) =>
+                        onChange({
+                            dietaryRestrictions: e.target.value,
+                        })
+                    }
+                    placeholder="e.g. gluten-free, nut allergy"
+                />
+            </div>
+        </>
+    );
+}
+
 function AttendeeRow({
     attendee,
     onChange,
@@ -186,16 +253,15 @@ function AttendeeRow({
     attendee: AttendeeState;
     onChange: (updated: Partial<AttendeeState>) => void;
 }) {
-    const showPlusOneMeal =
-        attendee.hasPlus_one &&
-        attendee.attending &&
-        attendee.plusOneName.trim() !== "";
+    const eaterOnChange = (isPlusOne: boolean, update: Partial<Eater>) => isPlusOne
+        ? onChange({ plusOne: { ...attendee.plusOne, ...update } as Eater })
+        : onChange(update);
 
     return (
         <div className="flex flex-col gap-3 rounded-lg border p-3">
             {/* Attending yes/no */}
             <div className="flex items-center justify-between gap-3">
-                <Label className="font-medium">{attendee.firstName}</Label>
+                <Label className="font-medium">{attendee.name}</Label>
                 <ToggleGroup
                     type="single"
                     value={attendee.attending ? "yes" : "no"}
@@ -207,14 +273,14 @@ function AttendeeRow({
                 >
                     <ToggleGroupItem
                         value="yes"
-                        aria-label={`Mark ${attendee.firstName} attending`}
+                        aria-label={`Mark ${attendee.name} attending`}
                         className="h-8 min-w-14"
                     >
                         Yes
                     </ToggleGroupItem>
                     <ToggleGroupItem
                         value="no"
-                        aria-label={`Mark ${attendee.firstName} not attending`}
+                        aria-label={`Mark ${attendee.name} not attending`}
                         className="h-8 min-w-14"
                     >
                         No
@@ -224,152 +290,55 @@ function AttendeeRow({
 
             {attendee.attending && (
                 <div className="flex flex-col gap-3 pl-6">
-                    {/* Meal choice */}
-                    <div className="flex flex-col gap-1.5">
-                        <Label className="text-xs text-muted-foreground">
-                            Meal selection
-                        </Label>
-                        <RadioGroup
-                            value={attendee.mealChoice}
-                            onValueChange={(val) =>
-                                onChange({ mealChoice: val as MealChoice })
-                            }
-                            className="flex flex-col gap-1"
-                        >
-                            {MEAL_CHOICES.map((choice) => (
-                                <div
-                                    key={choice}
-                                    className="flex items-center gap-2"
-                                >
-                                    <RadioGroupItem
-                                        value={choice}
-                                        id={`meal-${attendee.memberId}-${choice}`}
-                                    />
-                                    <Label
-                                        htmlFor={`meal-${attendee.memberId}-${choice}`}
-                                        className="text-sm font-normal"
-                                    >
-                                        {choice}
-                                    </Label>
-                                </div>
-                            ))}
-                        </RadioGroup>
-                    </div>
 
-                    {/* Dietary restrictions */}
-                    <div className="flex flex-col gap-1.5">
-                        <Label
-                            htmlFor={`dietary-${attendee.memberId}`}
-                            className="text-xs text-muted-foreground"
-                        >
-                            Dietary restrictions{" "}
-                            <span className="font-normal">(optional)</span>
-                        </Label>
-                        <Input
-                            id={`dietary-${attendee.memberId}`}
-                            value={attendee.dietaryRestrictions}
-                            onChange={(e) =>
-                                onChange({
-                                    dietaryRestrictions: e.target.value,
-                                })
-                            }
-                            placeholder="e.g. gluten-free, nut allergy"
-                        />
-                    </div>
+                    <MealSelection eater={attendee} onChange={(update) => eaterOnChange(false, update)} />
 
                     {/* Plus-one */}
                     {attendee.hasPlus_one && (
-                        <div className="flex flex-col gap-3 rounded-md border border-dashed p-2.5">
-                            <div className="flex flex-col gap-1.5">
-                                <Label
-                                    htmlFor={`plusone-name-${attendee.memberId}`}
-                                    className="text-xs text-muted-foreground"
-                                >
-                                    Plus-one Full Name{" "}
-                                    <span className="font-normal">
-                                        (optional)
-                                    </span>
-                                </Label>
-                                <Input
-                                    id={`plusone-name-${attendee.memberId}`}
-                                    value={attendee.plusOneName}
-                                    onChange={(e) =>
-                                        onChange({
-                                            plusOneName: e.target.value,
-                                            ...(e.target.value.trim() === "" && {
-                                                plusOneMealChoice: "",
-                                                plusOneDietaryRestrictions: "",
-                                            }),
-                                        })
+                        <>
+                            <div className="flex items-center gap-2">
+                                <Checkbox
+                                    id={`plusone-${attendee.memberId}`}
+                                    checked={attendee.plusOne !== null}
+                                    onCheckedChange={(checked) =>
+                                        onChange({ plusOne: checked === true ? (attendee.plusOne ?? { name: "", mealChoice: "", dietaryRestrictions: "" }) : null })
                                     }
-                                    placeholder="Guest's full name"
                                 />
+                                <Label
+                                    htmlFor={`plusone-${attendee.memberId}`}
+                                    className="text-sm font-normal"
+                                >
+                                    Bringing a plus-one?
+                                </Label>
                             </div>
-
-                            {showPlusOneMeal && (
-                                <>
-                                    <div className="flex flex-col gap-1.5">
-                                        <Label className="text-xs text-muted-foreground">
-                                            {attendee.plusOneName.trim()}&apos;s
-                                            meal selection
-                                        </Label>
-                                        <RadioGroup
-                                            value={attendee.plusOneMealChoice}
-                                            onValueChange={(val) =>
-                                                onChange({
-                                                    plusOneMealChoice:
-                                                        val as MealChoice,
-                                                })
-                                            }
-                                            className="flex flex-col gap-1"
-                                        >
-                                            {MEAL_CHOICES.map((choice) => (
-                                                <div
-                                                    key={choice}
-                                                    className="flex items-center gap-2"
-                                                >
-                                                    <RadioGroupItem
-                                                        value={choice}
-                                                        id={`plusone-meal-${attendee.memberId}-${choice}`}
-                                                    />
-                                                    <Label
-                                                        htmlFor={`plusone-meal-${attendee.memberId}-${choice}`}
-                                                        className="text-sm font-normal"
-                                                    >
-                                                        {choice}
-                                                    </Label>
-                                                </div>
-                                            ))}
-                                        </RadioGroup>
-                                    </div>
+                            {attendee.plusOne !== null && (
+                                <div className="flex flex-col gap-3 rounded-md border border-dashed p-2.5">
                                     <div className="flex flex-col gap-1.5">
                                         <Label
-                                            htmlFor={`plusone-dietary-${attendee.memberId}`}
+                                            htmlFor={`plusone-name-${attendee.memberId}`}
                                             className="text-xs text-muted-foreground"
                                         >
-                                            {attendee.plusOneName.trim()}&apos;s
-                                            dietary restrictions{" "}
-                                            <span className="font-normal">
-                                                (optional)
-                                            </span>
+                                            Plus-one Full Name{" "}
                                         </Label>
                                         <Input
-                                            id={`plusone-dietary-${attendee.memberId}`}
-                                            value={
-                                                attendee.plusOneDietaryRestrictions
-                                            }
+                                            id={`plusone-name-${attendee.memberId}`}
+                                            value={attendee.plusOne?.name ?? ""}
                                             onChange={(e) =>
                                                 onChange({
-                                                    plusOneDietaryRestrictions:
-                                                        e.target.value,
+                                                    plusOne: {
+                                                        ...attendee.plusOne,
+                                                        name: e.target.value,
+                                                    } as Eater,
                                                 })
                                             }
-                                            placeholder="e.g. gluten-free, nut allergy"
+                                            placeholder="Guest's full name"
                                         />
                                     </div>
-                                </>
+
+                                    <MealSelection eater={attendee.plusOne} onChange={(update) => eaterOnChange(true, update)} />
+                                </div>
                             )}
-                        </div>
+                        </>
                     )}
                 </div>
             )}
@@ -408,7 +377,7 @@ function DetailsStep({
     const isValid = attendees.every((a) => {
         if (!a.attending) return true;
         if (!a.mealChoice) return false;
-        if (a.hasPlus_one && a.plusOneName.trim() !== "" && !a.plusOneMealChoice)
+        if (a.plusOne && a.plusOne?.name.trim() !== "" && !a.plusOne?.mealChoice)
             return false;
         return true;
     });
@@ -512,12 +481,12 @@ function ConfirmationStep({
                         {attending.map((a) => (
                             <>
                                 <li key={a.memberId}>
-                                    {a.firstName} — {a.mealChoice}
+                                    {a.name} — {a.mealChoice}
                                 </li>
-                                {a.plusOneName.trim() !== "" && (
+                                {a.plusOne && (
                                     <li key={`${a.memberId}-plusone`}>
-                                        {a.plusOneName.trim()} (guest of{" "}
-                                        {a.firstName}) — {a.plusOneMealChoice}
+                                        {a.plusOne.name.trim()} (guest of{" "}
+                                        {a.name}) — {a.plusOne.mealChoice}
                                     </li>
                                 )}
                             </>
