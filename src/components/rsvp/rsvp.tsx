@@ -272,7 +272,7 @@ function AttendeeRow({
                                     htmlFor={`plusone-name-${attendee.memberId}`}
                                     className="text-xs text-muted-foreground"
                                 >
-                                    Plus-one name{" "}
+                                    Plus-one Full Name{" "}
                                     <span className="font-normal">
                                         (optional)
                                     </span>
