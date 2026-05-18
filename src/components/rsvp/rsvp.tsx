@@ -613,7 +613,7 @@ export default function RSVPForm() {
                 <DialogTrigger asChild>
                     <Button>RSVP</Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="sm:max-w-lg">
                     <DialogHeader>
                         <DialogTitle>{stepTitle()}</DialogTitle>
                     </DialogHeader>
