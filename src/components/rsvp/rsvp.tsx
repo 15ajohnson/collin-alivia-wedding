@@ -387,7 +387,7 @@ function DetailsStep({
     return (
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <p className="text-muted-foreground text-sm">
-                <span className="font-medium text-foreground">
+                <span className="font-medium">
                     {reservation.displayName}
                 </span>{" "}
                 — Select who&apos;s attending and choose a meal for each person.
