@@ -22,7 +22,6 @@ async function main() {
                 lastName: "Johnson",
                 displayName: "Michael Johnson",
                 maxSeats: 1,
-                rehearsalDinnerInvited: true,
             },
             // Couple, no plus-one
             {
@@ -30,7 +29,6 @@ async function main() {
                 lastName: "Williams",
                 displayName: "The Williams Family",
                 maxSeats: 4,
-                rehearsalDinnerInvited: false,
             },
             // Couple with plus-one slot
             {
@@ -38,7 +36,6 @@ async function main() {
                 lastName: "Martinez",
                 displayName: "David & Sarah Martinez",
                 maxSeats: 3,
-                rehearsalDinnerInvited: false,
             },
             // Family, rehearsal dinner invited
             {
@@ -46,7 +43,6 @@ async function main() {
                 lastName: "Thompson",
                 displayName: "The Thompson Family",
                 maxSeats: 5,
-                rehearsalDinnerInvited: true,
             },
             // Single guest with plus-one slot
             {
@@ -54,7 +50,6 @@ async function main() {
                 lastName: "Chen",
                 displayName: "Emily Chen",
                 maxSeats: 2,
-                rehearsalDinnerInvited: false,
             },
             // Two reservations with the same last name (tests disambiguation UI)
             {
@@ -62,14 +57,12 @@ async function main() {
                 lastName: "Smith",
                 displayName: "Robert & Karen Smith",
                 maxSeats: 2,
-                rehearsalDinnerInvited: false,
             },
             {
                 id: 7,
                 lastName: "Smith",
                 displayName: "James & Patricia Smith",
                 maxSeats: 2,
-                rehearsalDinnerInvited: true,
             },
         ],
     });
@@ -77,35 +70,35 @@ async function main() {
     await prisma.reservationMember.createMany({
         data: [
             // Reservation 1 — Michael Johnson (solo)
-            { reservationId: 1, firstName: "Michael" },
+            { reservationId: 1, firstName: "Michael", hasPlusOne: false, rehearsalDinnerInvited: true },
 
             // Reservation 2 — Williams Family
-            { reservationId: 2, firstName: "Daniel" },
-            { reservationId: 2, firstName: "Laura" },
-            { reservationId: 2, firstName: "Olivia" },
-            { reservationId: 2, firstName: "Noah" },
+            { reservationId: 2, firstName: "Daniel", hasPlusOne: false, rehearsalDinnerInvited: false },
+            { reservationId: 2, firstName: "Laura", hasPlusOne: false, rehearsalDinnerInvited: false },
+            { reservationId: 2, firstName: "Olivia", hasPlusOne: false, rehearsalDinnerInvited: false },
+            { reservationId: 2, firstName: "Noah", hasPlusOne: false, rehearsalDinnerInvited: false },
 
             // Reservation 3 — David & Sarah Martinez (+ plus-one slot, not seeded)
-            { reservationId: 3, firstName: "David" },
-            { reservationId: 3, firstName: "Sarah" },
+            { reservationId: 3, firstName: "David", hasPlusOne: true, rehearsalDinnerInvited: false },
+            { reservationId: 3, firstName: "Sarah", hasPlusOne: false, rehearsalDinnerInvited: true },
 
             // Reservation 4 — Thompson Family
-            { reservationId: 4, firstName: "Brian" },
-            { reservationId: 4, firstName: "Susan" },
-            { reservationId: 4, firstName: "Tyler" },
-            { reservationId: 4, firstName: "Megan" },
-            { reservationId: 4, firstName: "Grace" },
+            { reservationId: 4, firstName: "Brian", hasPlusOne: false, rehearsalDinnerInvited: true },
+            { reservationId: 4, firstName: "Susan", hasPlusOne: false, rehearsalDinnerInvited: true },
+            { reservationId: 4, firstName: "Tyler", hasPlusOne: false, rehearsalDinnerInvited: false },
+            { reservationId: 4, firstName: "Megan", hasPlusOne: false, rehearsalDinnerInvited: false },
+            { reservationId: 4, firstName: "Grace", hasPlusOne: false, rehearsalDinnerInvited: false },
 
             // Reservation 5 — Emily Chen (+ plus-one slot, not seeded)
-            { reservationId: 5, firstName: "Emily" },
+            { reservationId: 5, firstName: "Emily", hasPlusOne: true, rehearsalDinnerInvited: false },
 
             // Reservation 6 — Robert & Karen Smith
-            { reservationId: 6, firstName: "Robert" },
-            { reservationId: 6, firstName: "Karen" },
+            { reservationId: 6, firstName: "Robert", hasPlusOne: false, rehearsalDinnerInvited: false },
+            { reservationId: 6, firstName: "Karen", hasPlusOne: false, rehearsalDinnerInvited: false },
 
             // Reservation 7 — James & Patricia Smith
-            { reservationId: 7, firstName: "James" },
-            { reservationId: 7, firstName: "Patricia" },
+            { reservationId: 7, firstName: "James", hasPlusOne: false, rehearsalDinnerInvited: true },
+            { reservationId: 7, firstName: "Patricia", hasPlusOne: false, rehearsalDinnerInvited: true },
         ],
     });
 

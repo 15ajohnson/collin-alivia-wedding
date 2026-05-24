@@ -37,6 +37,8 @@ interface Eater {
 type AttendeeState = Eater & {
     memberId: number;
     plusOneAvailable: boolean;
+    rehearsalDinnerInvited: boolean;
+    rehearsalDinnerAttending: boolean;
     attending: boolean;
     plusOneSelected: boolean;
     plusOne: Eater;
@@ -59,6 +61,8 @@ function buildAttendeeState(reservation: MockReservation): AttendeeState[] {
         memberId: m.id,
         name: m.firstName,
         plusOneAvailable: m.hasPlus_one,
+        rehearsalDinnerInvited: m.rehearsalDinnerInvited,
+        rehearsalDinnerAttending: false,
         attending: false,
         mealChoice: "",
         dietaryRestrictions: "",
@@ -293,6 +297,29 @@ function AttendeeRow({
             {attendee.attending && (
                 <div className="flex flex-col gap-3 pl-6">
 
+                    {attendee.rehearsalDinnerInvited && (
+                        <div className="flex items-start gap-2 rounded-md border p-2.5">
+                            <Checkbox
+                                id={`rehearsal-dinner-${attendee.memberId}`}
+                                checked={attendee.rehearsalDinnerAttending}
+                                onCheckedChange={(checked) =>
+                                    onChange({ rehearsalDinnerAttending: checked === true })
+                                }
+                            />
+                            <div className="flex flex-col gap-0.5">
+                                <Label
+                                    htmlFor={`rehearsal-dinner-${attendee.memberId}`}
+                                    className="text-sm font-medium"
+                                >
+                                    Rehearsal dinner
+                                </Label>
+                                <p className="text-xs text-muted-foreground">
+                                    {attendee.name} is invited to the rehearsal dinner the evening before the wedding.
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
                     <MealSelection eater={attendee} onChange={(update) => eaterOnChange(false, update)} />
 
                     {/* Plus-one */}
@@ -354,12 +381,11 @@ function DetailsStep({
     onSubmit,
 }: {
     reservation: MockReservation;
-    onSubmit: (attendees: AttendeeState[], rehearsalDinner: boolean | null) => void;
+    onSubmit: (attendees: AttendeeState[]) => void;
 }) {
     const [attendees, setAttendees] = useState<AttendeeState[]>(
         buildAttendeeState(reservation)
     );
-    const [rehearsalDinner, setRehearsalDinner] = useState(false);
 
     function updateAttendee(index: number, update: Partial<AttendeeState>) {
         setAttendees((prev) =>
@@ -369,10 +395,7 @@ function DetailsStep({
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        onSubmit(
-            attendees,
-            reservation.rehearsalDinnerInvited ? rehearsalDinner : null
-        );
+        onSubmit(attendees);
     }
 
     const anyAttending = attendees.some((a) => a.attending);
@@ -401,31 +424,6 @@ function DetailsStep({
                         onChange={(update) => updateAttendee(i, update)}
                     />
                 ))}
-
-                {reservation.rehearsalDinnerInvited && (
-                    <div className="flex items-start gap-2 rounded-lg border p-3">
-                        <Checkbox
-                            id="rehearsal-dinner"
-                            checked={rehearsalDinner}
-                            onCheckedChange={(checked) =>
-                                setRehearsalDinner(checked === true)
-                            }
-                        />
-                        <div className="flex flex-col gap-0.5">
-                            <Label
-                                htmlFor="rehearsal-dinner"
-                                className="font-medium"
-                            >
-                                Rehearsal dinner
-                            </Label>
-                            <p className="text-xs text-muted-foreground">
-                                Your party is invited to the rehearsal dinner
-                                the evening before the wedding. Will your party
-                                be attending?
-                            </p>
-                        </div>
-                    </div>
-                )}
             </div>
 
             <DialogFooter className="flex-col gap-2 sm:flex-col">
@@ -450,12 +448,10 @@ function DetailsStep({
 function ConfirmationStep({
     reservation,
     attendees,
-    rehearsalDinner,
     onClose,
 }: {
     reservation: MockReservation;
     attendees: AttendeeState[];
-    rehearsalDinner: boolean | null;
     onClose: () => void;
 }) {
     const attending = attendees.filter((a) => a.attending);
@@ -484,8 +480,14 @@ function ConfirmationStep({
                             <>
                                 <li key={a.memberId}>
                                     {a.name} — {a.mealChoice}
+                                    {a.rehearsalDinnerInvited && (
+                                        <span>
+                                            {" "}
+                                            (Rehearsal dinner: {a.rehearsalDinnerAttending ? "Attending" : "Not attending"})
+                                        </span>
+                                    )}
                                 </li>
-                                {a.plusOne && (
+                                {a.plusOneSelected && (
                                     <li key={`${a.memberId}-plusone`}>
                                         {a.plusOne.name.trim()} (guest of{" "}
                                         {a.name}) — {a.plusOne.mealChoice}
@@ -494,14 +496,6 @@ function ConfirmationStep({
                             </>
                         ))}
                     </ul>
-                    {rehearsalDinner !== null && (
-                        <p className="text-sm text-muted-foreground mt-1">
-                            Rehearsal dinner:{" "}
-                            <span className="font-medium">
-                                {rehearsalDinner ? "Attending" : "Not attending"}
-                            </span>
-                        </p>
-                    )}
                 </div>
             )}
 
@@ -529,16 +523,12 @@ export default function RSVPForm() {
     const [submittedAttendees, setSubmittedAttendees] = useState<
         AttendeeState[]
     >([]);
-    const [submittedRehearsalDinner, setSubmittedRehearsalDinner] = useState<
-        boolean | null
-    >(null);
 
     function reset() {
         setStep("lookup");
         setDisambiguationOptions([]);
         setSelectedReservation(null);
         setSubmittedAttendees([]);
-        setSubmittedRehearsalDinner(null);
     }
 
     function handleOpenChange(isOpen: boolean) {
@@ -565,12 +555,8 @@ export default function RSVPForm() {
         setStep("details");
     }
 
-    function handleSubmit(
-        attendees: AttendeeState[],
-        rehearsalDinner: boolean | null
-    ) {
+    function handleSubmit(attendees: AttendeeState[]) {
         setSubmittedAttendees(attendees);
-        setSubmittedRehearsalDinner(rehearsalDinner);
         setStep("confirmation");
     }
 
@@ -631,7 +617,6 @@ export default function RSVPForm() {
                         <ConfirmationStep
                             reservation={selectedReservation}
                             attendees={submittedAttendees}
-                            rehearsalDinner={submittedRehearsalDinner}
                             onClose={() => handleOpenChange(false)}
                         />
                     )}
