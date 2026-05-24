@@ -17,12 +17,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
-import {
-    MEAL_CHOICES,
-    type MealChoice,
-    type MockReservation,
-    mockLookupReservation,
-} from "./mock-data";
+import { lookupReservations, ReservationLookupResult } from "@/lib/actions/rsvp";
+import { ReservationWithMembersWithRsvp } from "@/lib/rsvp/rsvp.types";
+import React from "react";
+import { MEAL_CHOICES, MealChoice } from "@/lib/rsvp/meal-choices";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -56,11 +54,11 @@ type Step =
 // Helpers
 // ---------------------------------------------------------------------------
 
-function buildAttendeeState(reservation: MockReservation): AttendeeState[] {
+function buildAttendeeState(reservation: ReservationWithMembersWithRsvp): AttendeeState[] {
     return reservation.members.map((m) => ({
         memberId: m.id,
         name: m.firstName,
-        plusOneAvailable: m.hasPlus_one,
+        plusOneAvailable: m.hasPlusOne,
         rehearsalDinnerInvited: m.rehearsalDinnerInvited,
         rehearsalDinnerAttending: false,
         attending: false,
@@ -81,27 +79,33 @@ function LookupStep({
     onNoResults,
     onDisambiguate,
 }: {
-    onFound: (reservation: MockReservation) => void;
+    onFound: (reservation: ReservationWithMembersWithRsvp) => void;
     onAlreadySubmitted: () => void;
     onNoResults: () => void;
-    onDisambiguate: (reservations: MockReservation[]) => void;
+    onDisambiguate: (reservations: ReservationLookupResult) => void;
 }) {
     const [lastName, setLastName] = useState("");
 
-    function handleSubmit(e: React.FormEvent) {
+    async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        const results = mockLookupReservation(lastName);
+        const results = await lookupReservations(lastName);
 
-        if (results.length === 0) {
+        if (results.error || !results.reservations) {
+            console.error(results.error);
+            // TODO: show error to user
+            return;
+        }
+
+        if (results.reservations.length === 0) {
             onNoResults();
             return;
         }
 
-        if (results.length === 1) {
-            if (results[0].alreadySubmitted) {
+        if (results.reservations.length === 1) {
+            if (results.reservations[0].alreadySubmitted) {
                 onAlreadySubmitted();
             } else {
-                onFound(results[0]);
+                onFound(results.reservations[0].reservation);
             }
             return;
         }
@@ -135,18 +139,18 @@ function LookupStep({
 }
 
 function DisambiguateStep({
-    reservations,
+    reservationLookupResults,
     onSelect,
 }: {
-    reservations: MockReservation[];
-    onSelect: (reservation: MockReservation) => void;
+    reservationLookupResults: ReservationLookupResult;
+    onSelect: (reservation: ReservationWithMembersWithRsvp, alreadySubmitted: boolean) => void;
 }) {
     const [selectedId, setSelectedId] = useState<number | null>(null);
 
     function handleContinue() {
-        const reservation = reservations.find((r) => r.id === selectedId);
+        const reservation = reservationLookupResults.reservations?.find((r) => r.reservation.id === selectedId);
         if (!reservation) return;
-        onSelect(reservation);
+        onSelect(reservation.reservation, reservation.alreadySubmitted);
     }
 
     return (
@@ -159,14 +163,14 @@ function DisambiguateStep({
                 onValueChange={(val) => setSelectedId(Number(val))}
                 className="flex flex-col gap-2"
             >
-                {reservations.map((r) => (
-                    <div key={r.id} className="flex items-center gap-2">
+                {reservationLookupResults.reservations?.map((r) => (
+                    <div key={r.reservation.id} className="flex items-center gap-2">
                         <RadioGroupItem
-                            value={r.id.toString()}
-                            id={`reservation-${r.id}`}
+                            value={r.reservation.id.toString()}
+                            id={`reservation-${r.reservation.id}`}
                         />
-                        <Label htmlFor={`reservation-${r.id}`}>
-                            {r.displayName}
+                        <Label htmlFor={`reservation-${r.reservation.id}`}>
+                            {r.reservation.displayName}
                         </Label>
                     </div>
                 ))}
@@ -380,7 +384,7 @@ function DetailsStep({
     reservation,
     onSubmit,
 }: {
-    reservation: MockReservation;
+    reservation: ReservationWithMembersWithRsvp;
     onSubmit: (attendees: AttendeeState[]) => void;
 }) {
     const [attendees, setAttendees] = useState<AttendeeState[]>(
@@ -450,7 +454,7 @@ function ConfirmationStep({
     attendees,
     onClose,
 }: {
-    reservation: MockReservation;
+    reservation: ReservationWithMembersWithRsvp;
     attendees: AttendeeState[];
     onClose: () => void;
 }) {
@@ -477,7 +481,7 @@ function ConfirmationStep({
                     <p className="text-sm font-medium">Attending:</p>
                     <ul className="flex flex-col gap-1 text-sm text-muted-foreground">
                         {attending.map((a) => (
-                            <>
+                            <React.Fragment key={a.memberId}>
                                 <li key={a.memberId}>
                                     {a.name} — {a.mealChoice}
                                     {a.rehearsalDinnerInvited && (
@@ -493,7 +497,7 @@ function ConfirmationStep({
                                         {a.name}) — {a.plusOne.mealChoice}
                                     </li>
                                 )}
-                            </>
+                            </React.Fragment>
                         ))}
                     </ul>
                 </div>
@@ -516,17 +520,17 @@ export default function RSVPForm() {
     const [open, setOpen] = useState(false);
     const [step, setStep] = useState<Step>("lookup");
     const [disambiguationOptions, setDisambiguationOptions] = useState<
-        MockReservation[]
-    >([]);
+        ReservationLookupResult | null
+    >(null);
     const [selectedReservation, setSelectedReservation] =
-        useState<MockReservation | null>(null);
+        useState<ReservationWithMembersWithRsvp | null>(null);
     const [submittedAttendees, setSubmittedAttendees] = useState<
         AttendeeState[]
     >([]);
 
     function reset() {
         setStep("lookup");
-        setDisambiguationOptions([]);
+        setDisambiguationOptions(null);
         setSelectedReservation(null);
         setSubmittedAttendees([]);
     }
@@ -536,18 +540,18 @@ export default function RSVPForm() {
         if (!isOpen) reset();
     }
 
-    function handleFound(reservation: MockReservation) {
+    function handleFound(reservation: ReservationWithMembersWithRsvp) {
         setSelectedReservation(reservation);
         setStep("details");
     }
 
-    function handleDisambiguate(reservations: MockReservation[]) {
-        setDisambiguationOptions(reservations);
+    function handleDisambiguate(reservationLookupResults: ReservationLookupResult) {
+        setDisambiguationOptions(reservationLookupResults);
         setStep("disambiguate");
     }
 
-    function handleDisambiguationSelect(reservation: MockReservation) {
-        if (reservation.alreadySubmitted) {
+    function handleDisambiguationSelect(reservation: ReservationWithMembersWithRsvp, alreadySubmitted: boolean) {
+        if (alreadySubmitted) {
             setStep("already-submitted");
             return;
         }
@@ -601,7 +605,7 @@ export default function RSVPForm() {
 
                     {step === "disambiguate" && (
                         <DisambiguateStep
-                            reservations={disambiguationOptions}
+                            reservationLookupResults={disambiguationOptions!}
                             onSelect={handleDisambiguationSelect}
                         />
                     )}

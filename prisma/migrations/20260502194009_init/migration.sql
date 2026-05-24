@@ -1,7 +1,7 @@
 -- CreateTable
 CREATE TABLE "reservation" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "last_name" TEXT NOT NULL,
+    "last_name" TEXT NOT NULL COLLATE NOCASE,
     "display_name" TEXT NOT NULL,
     "max_seats" INTEGER NOT NULL
 );

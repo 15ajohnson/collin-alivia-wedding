@@ -16,89 +16,59 @@ async function main() {
 
     await prisma.reservation.createMany({
         data: [
-            // Single guest, no plus-one, rehearsal dinner invited
-            {
-                id: 1,
-                lastName: "Johnson",
-                displayName: "Michael Johnson",
-                maxSeats: 1,
-            },
-            // Couple, no plus-one
-            {
-                id: 2,
-                lastName: "Williams",
-                displayName: "The Williams Family",
-                maxSeats: 4,
-            },
-            // Couple with plus-one slot
-            {
-                id: 3,
-                lastName: "Martinez",
-                displayName: "David & Sarah Martinez",
-                maxSeats: 3,
-            },
-            // Family, rehearsal dinner invited
-            {
-                id: 4,
-                lastName: "Thompson",
-                displayName: "The Thompson Family",
-                maxSeats: 5,
-            },
-            // Single guest with plus-one slot
-            {
-                id: 5,
-                lastName: "Chen",
-                displayName: "Emily Chen",
-                maxSeats: 2,
-            },
-            // Two reservations with the same last name (tests disambiguation UI)
-            {
-                id: 6,
-                lastName: "Smith",
-                displayName: "Robert & Karen Smith",
-                maxSeats: 2,
-            },
-            {
-                id: 7,
-                lastName: "Smith",
-                displayName: "James & Patricia Smith",
-                maxSeats: 2,
-            },
+            // Two Smith reservations — tests disambiguation UI
+            { id: 1, lastName: "Smith", displayName: "The Smith Family", maxSeats: 4 },
+            { id: 2, lastName: "Smith", displayName: "Bob & Alice Smith", maxSeats: 3 },
+            // Johnson — already submitted
+            { id: 3, lastName: "Johnson", displayName: "The Johnson Family", maxSeats: 2 },
+            // Williams
+            { id: 4, lastName: "Williams", displayName: "David & Emma Williams", maxSeats: 3 },
         ],
     });
 
     await prisma.reservationMember.createMany({
         data: [
-            // Reservation 1 — Michael Johnson (solo)
-            { reservationId: 1, firstName: "Michael", hasPlusOne: false, rehearsalDinnerInvited: true },
+            // Reservation 1 — The Smith Family
+            { id: 1, reservationId: 1, firstName: "John", hasPlusOne: false, rehearsalDinnerInvited: true },
+            { id: 2, reservationId: 1, firstName: "Jane", hasPlusOne: false, rehearsalDinnerInvited: false },
+            { id: 3, reservationId: 1, firstName: "Emily", hasPlusOne: true, rehearsalDinnerInvited: true },
 
-            // Reservation 2 — Williams Family
-            { reservationId: 2, firstName: "Daniel", hasPlusOne: false, rehearsalDinnerInvited: false },
-            { reservationId: 2, firstName: "Laura", hasPlusOne: false, rehearsalDinnerInvited: false },
-            { reservationId: 2, firstName: "Olivia", hasPlusOne: false, rehearsalDinnerInvited: false },
-            { reservationId: 2, firstName: "Noah", hasPlusOne: false, rehearsalDinnerInvited: false },
+            // Reservation 2 — Bob & Alice Smith
+            { id: 4, reservationId: 2, firstName: "Bob", hasPlusOne: true, rehearsalDinnerInvited: false },
+            { id: 5, reservationId: 2, firstName: "Alice", hasPlusOne: false, rehearsalDinnerInvited: false },
 
-            // Reservation 3 — David & Sarah Martinez (+ plus-one slot, not seeded)
-            { reservationId: 3, firstName: "David", hasPlusOne: true, rehearsalDinnerInvited: false },
-            { reservationId: 3, firstName: "Sarah", hasPlusOne: false, rehearsalDinnerInvited: true },
+            // Reservation 3 — The Johnson Family (already submitted)
+            { id: 6, reservationId: 3, firstName: "Michael", hasPlusOne: false, rehearsalDinnerInvited: true },
+            { id: 7, reservationId: 3, firstName: "Sarah", hasPlusOne: false, rehearsalDinnerInvited: true },
 
-            // Reservation 4 — Thompson Family
-            { reservationId: 4, firstName: "Brian", hasPlusOne: false, rehearsalDinnerInvited: true },
-            { reservationId: 4, firstName: "Susan", hasPlusOne: false, rehearsalDinnerInvited: true },
-            { reservationId: 4, firstName: "Tyler", hasPlusOne: false, rehearsalDinnerInvited: false },
-            { reservationId: 4, firstName: "Megan", hasPlusOne: false, rehearsalDinnerInvited: false },
-            { reservationId: 4, firstName: "Grace", hasPlusOne: false, rehearsalDinnerInvited: false },
+            // Reservation 4 — David & Emma Williams
+            { id: 8, reservationId: 4, firstName: "David", hasPlusOne: true, rehearsalDinnerInvited: false },
+            { id: 9, reservationId: 4, firstName: "Emma", hasPlusOne: false, rehearsalDinnerInvited: true },
+        ],
+    });
 
-            // Reservation 5 — Emily Chen (+ plus-one slot, not seeded)
-            { reservationId: 5, firstName: "Emily", hasPlusOne: true, rehearsalDinnerInvited: false },
+    // Seed a pre-existing RSVP for the Johnson family (tests "already submitted" UI)
+    const johnsonRsvp = await prisma.rsvp.create({
+        data: {
+            reservationId: 3,
+            submittedAt: new Date("2026-04-01T12:00:00Z"),
+        },
+    });
 
-            // Reservation 6 — Robert & Karen Smith
-            { reservationId: 6, firstName: "Robert", hasPlusOne: false, rehearsalDinnerInvited: false },
-            { reservationId: 6, firstName: "Karen", hasPlusOne: false, rehearsalDinnerInvited: false },
-
-            // Reservation 7 — James & Patricia Smith
-            { reservationId: 7, firstName: "James", hasPlusOne: false, rehearsalDinnerInvited: true },
-            { reservationId: 7, firstName: "Patricia", hasPlusOne: false, rehearsalDinnerInvited: true },
+    await prisma.rsvpAttendee.createMany({
+        data: [
+            {
+                rsvpId: johnsonRsvp.id,
+                reservationMemberId: 6, // Michael
+                mealChoice: "Herb-Roasted Chicken",
+                rehearsalDinnerAttending: true,
+            },
+            {
+                rsvpId: johnsonRsvp.id,
+                reservationMemberId: 7, // Sarah
+                mealChoice: "Pan-Seared Salmon",
+                rehearsalDinnerAttending: true,
+            },
         ],
     });
 
