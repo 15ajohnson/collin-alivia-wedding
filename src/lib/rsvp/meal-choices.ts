@@ -4,4 +4,4 @@ export const MEAL_CHOICES = [
   "Wild Mushroom Risotto (Vegetarian)",
 ] as const;
 
-export type MealChoice = (typeof MEAL_CHOICES)[number];
+export type MealChoice = (typeof MEAL_CHOICES)[number] | "";

@@ -20,6 +20,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   lookupReservations,
   ReservationLookupResult,
+  submitRsvp,
 } from "@/lib/actions/rsvp";
 import { ReservationWithMembersWithRsvp } from "@/lib/rsvp/rsvp.types";
 import React from "react";
@@ -31,7 +32,7 @@ import { MEAL_CHOICES, MealChoice } from "@/lib/rsvp/meal-choices";
 
 interface Eater {
   name: string;
-  mealChoice: MealChoice | "";
+  mealChoice: MealChoice;
   dietaryRestrictions: string;
 }
 
@@ -72,6 +73,22 @@ function buildAttendeeState(
     plusOneSelected: false,
     plusOne: { name: "", mealChoice: "", dietaryRestrictions: "" },
   }));
+}
+
+function submit(
+  selectedReservation: ReservationWithMembersWithRsvp,
+  attendees: AttendeeState[],
+) {
+  const submissionAttendees = attendees.map((a) => ({
+    memberId: a.memberId,
+    mealChoice: a.mealChoice,
+    rehearsalDinnerAttending: a.rehearsalDinnerAttending,
+    plusOneMealChoice:
+      a.plusOneSelected && a.plusOne.mealChoice
+        ? a.plusOne.mealChoice
+        : undefined,
+  }));
+  return submitRsvp(selectedReservation!.id, submissionAttendees);
 }
 
 // ---------------------------------------------------------------------------
@@ -577,8 +594,15 @@ export default function RSVPForm() {
     setStep("details");
   }
 
-  function handleSubmit(attendees: AttendeeState[]) {
+  async function handleSubmit(attendees: AttendeeState[]) {
     setSubmittedAttendees(attendees);
+
+    submit(selectedReservation!, attendees).then((result) => {
+      if (!result.success) {
+        // TODO: handle error (e.g. show error message and stay on details step)
+      }
+    });
+
     setStep("confirmation");
   }
 
