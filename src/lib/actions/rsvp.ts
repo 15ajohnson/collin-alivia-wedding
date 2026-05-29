@@ -49,31 +49,46 @@ export interface SubmitRsvpResult {
   error?: string;
 }
 
-export async function submitRsvp(
-  reservationId: number,
+export interface SubmitRsvpRequest {
+  reservationId: number;
   attendees: {
-    memberId: number;
+    who:
+      | { memberId: number }
+      | { plusOneName: string; broughtByMemberId: number };
     mealChoice: MealChoice;
+    dietaryRestrictions?: string;
     rehearsalDinnerAttending: boolean;
-    plusOneMealChoice?: MealChoice;
-  }[],
+  }[];
+}
+
+export async function submitRsvp(
+  request: SubmitRsvpRequest,
 ): Promise<SubmitRsvpResult> {
   try {
     // Create the RSVP record
     const rsvp = await prisma.rsvp.create({
       data: {
-        reservationId,
+        reservationId: request.reservationId,
         submittedAt: new Date(),
       },
     });
 
-    // Create RSVP attendee records
-    const rsvpAttendeesData = attendees.map((a) => ({
+    type AttendeeWho = SubmitRsvpRequest["attendees"][number]["who"];
+
+    const isPlusOne = (
+      who: AttendeeWho,
+    ): who is Extract<AttendeeWho, { plusOneName: string }> =>
+      "plusOneName" in who;
+
+    // Create named RSVP attendee records
+    const rsvpAttendeesData = request.attendees.map((a) => ({
       rsvpId: rsvp.id,
-      reservationMemberId: a.memberId,
+      reservationMemberId: isPlusOne(a.who) ? null : a.who.memberId,
+      plusOneName: isPlusOne(a.who) ? a.who.plusOneName : null,
+      broughtByMemberId: isPlusOne(a.who) ? a.who.broughtByMemberId : null,
+      dietaryRestrictions: a.dietaryRestrictions,
       mealChoice: a.mealChoice,
       rehearsalDinnerAttending: a.rehearsalDinnerAttending,
-      plusOneMealChoice: a.plusOneMealChoice,
     }));
 
     await prisma.rsvpAttendee.createMany({

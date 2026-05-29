@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "test": "vitest",
     "prisma:generate": "prisma generate",
-    "prisma:migrate:dev": "prisma migrate dev",
+    "prisma:dev": "prisma migrate dev && prisma db seed",
     "prisma:migrate:prod": "prisma migrate deploy"
   },
   "dependencies": {

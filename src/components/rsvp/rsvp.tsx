@@ -79,16 +79,37 @@ function submit(
   selectedReservation: ReservationWithMembersWithRsvp,
   attendees: AttendeeState[],
 ) {
-  const submissionAttendees = attendees.map((a) => ({
-    memberId: a.memberId,
-    mealChoice: a.mealChoice,
-    rehearsalDinnerAttending: a.rehearsalDinnerAttending,
-    plusOneMealChoice:
-      a.plusOneSelected && a.plusOne.mealChoice
-        ? a.plusOne.mealChoice
-        : undefined,
-  }));
-  return submitRsvp(selectedReservation!.id, submissionAttendees);
+  console.debug("Submitting RSVP for reservation", selectedReservation.id, {
+    attendees,
+  });
+  const submissionAttendees = attendees
+    .filter((a) => a.attending)
+    .flatMap((a) => {
+      const invitedMemberAttendee = {
+        who: { memberId: a.memberId },
+        mealChoice: a.mealChoice,
+        rehearsalDinnerAttending: a.rehearsalDinnerAttending,
+        dietaryRestrictions: a.dietaryRestrictions,
+      };
+
+      if (!a.plusOneSelected) {
+        return [invitedMemberAttendee];
+      }
+
+      const plusOneAttendee = {
+        who: { plusOneName: a.plusOne.name, broughtByMemberId: a.memberId },
+        mealChoice: a.plusOne.mealChoice,
+        rehearsalDinnerAttending: false,
+        dietaryRestrictions: a.plusOne.dietaryRestrictions,
+      };
+
+      return [invitedMemberAttendee, plusOneAttendee];
+    });
+
+  return submitRsvp({
+    reservationId: selectedReservation!.id,
+    attendees: submissionAttendees,
+  });
 }
 
 // ---------------------------------------------------------------------------
