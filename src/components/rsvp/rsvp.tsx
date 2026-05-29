@@ -107,14 +107,17 @@ function LookupStep({
   onDisambiguate: (reservations: ReservationLookupResult) => void;
 }) {
   const [lastName, setLastName] = useState("");
+  const [lookupError, setLookupError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setLookupError(null);
     const results = await lookupReservations(lastName);
 
     if (results.error || !results.reservations) {
-      console.error(results.error);
-      // TODO: show error to user
+      setLookupError(
+        "Something went wrong looking up your reservation. Please try again.",
+      );
       return;
     }
 
@@ -140,6 +143,7 @@ function LookupStep({
       <p className="text-muted-foreground text-sm">
         Enter your last name to find your reservation.
       </p>
+      {lookupError && <p className="text-sm text-destructive">{lookupError}</p>}
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="last-name">Last name</Label>
         <Input
@@ -408,9 +412,11 @@ function AttendeeRow({
 function DetailsStep({
   reservation,
   onSubmit,
+  submitError,
 }: {
   reservation: ReservationWithMembersWithRsvp;
   onSubmit: (attendees: AttendeeState[]) => void;
+  submitError?: string | null;
 }) {
   const [attendees, setAttendees] = useState<AttendeeState[]>(
     buildAttendeeState(reservation),
@@ -459,6 +465,9 @@ function DetailsStep({
       </div>
 
       <DialogFooter className="flex-col gap-2 sm:flex-col">
+        {submitError && (
+          <p className="text-sm text-destructive text-center">{submitError}</p>
+        )}
         {!anyAttending && (
           <p className="text-xs text-muted-foreground text-center">
             No attendees selected — submitting will record a full decline.
@@ -557,12 +566,14 @@ export default function RSVPForm() {
   const [submittedAttendees, setSubmittedAttendees] = useState<AttendeeState[]>(
     [],
   );
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   function reset() {
     setStep("lookup");
     setDisambiguationOptions(null);
     setSelectedReservation(null);
     setSubmittedAttendees([]);
+    setSubmitError(null);
   }
 
   function handleOpenChange(isOpen: boolean) {
@@ -595,14 +606,13 @@ export default function RSVPForm() {
   }
 
   async function handleSubmit(attendees: AttendeeState[]) {
+    setSubmitError(null);
+    const result = await submit(selectedReservation!, attendees);
+    if (!result.success) {
+      setSubmitError(result.error ?? "Something went wrong. Please try again.");
+      return;
+    }
     setSubmittedAttendees(attendees);
-
-    submit(selectedReservation!, attendees).then((result) => {
-      if (!result.success) {
-        // TODO: handle error (e.g. show error message and stay on details step)
-      }
-    });
-
     setStep("confirmation");
   }
 
@@ -654,6 +664,7 @@ export default function RSVPForm() {
             <DetailsStep
               reservation={selectedReservation}
               onSubmit={handleSubmit}
+              submitError={submitError}
             />
           )}
 
