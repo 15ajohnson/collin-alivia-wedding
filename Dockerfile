@@ -61,6 +61,9 @@ ENV NEXT_PUBLIC_COMING_SOON=$COMING_SOON
 # cached fetch responses from the build won't be available at runtime.
 RUN npm run build
 
+# compile prisma config
+RUN npx ncc build prisma.config.mjs -o prisma.config
+
 # ============================================
 # Stage 3: Run Next.js application
 # ============================================
@@ -78,10 +81,23 @@ ENV HOSTNAME="0.0.0.0"
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
 # Uncomment the following line in case you want to disable telemetry during the run time.
-# ENV NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_TELEMETRY_DISABLED=1
 
 # Copy production assets
 COPY --from=builder --chown=node:node /app/public ./public
+
+# install openssl (needed for Prisma)
+RUN apt-get update && apt-get install -y openssl
+
+# copy prisma migrations, config and entrypoint
+COPY --from=builder --chown=node:node /app/prisma /app/prisma
+COPY --from=builder --chown=node:node /app/prisma.config/index.mjs /app/prisma.config.mjs
+# COPY --from=builder --chown=node:node /app/node_modules/.bin/prisma /app/node_modules/.bin/
+# COPY --from=builder --chown=node:node /app/node_modules/prisma /app/node_modules/@prisma /app/node_modules/
+
+# Ensure SQLite data directory exists and is writable by the runtime user.
+# This also initializes named volumes with node ownership on first mount.
+RUN mkdir -p /data && chown node:node /data
 
 # Set the correct permission for prerender cache
 RUN mkdir .next

@@ -1,6 +1,7 @@
 services:
   db-migrations:
-    image: ghcr.io/15ajohnson/wedding:latest
+    build:
+      context: .
     command: ["npx", "prisma", "migrate", "deploy"]
     restart: "no"
     environment:
@@ -9,7 +10,11 @@ services:
       - rsvp-data:/data
 
   app:
-    image: ghcr.io/15ajohnson/wedding:latest
+    build:
+      context: .
+    depends_on:
+      db-migrations:
+        condition: service_completed_successfully
     environment:
       DATABASE_URL: file:/data/rsvp.db
     volumes:
