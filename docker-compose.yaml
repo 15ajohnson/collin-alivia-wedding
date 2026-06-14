@@ -19,3 +19,8 @@ services:
 
 volumes:
   rsvp-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /var/lib/app-data/collin-alivia-wedding
