@@ -53,6 +53,9 @@ ENV NEXT_PUBLIC_COMING_SOON=$COMING_SOON
 # Uncomment the following line in case you want to disable telemetry during the build.
 # ENV NEXT_TELEMETRY_DISABLED=1
 
+# prisma codegen
+RUN npx prisma generate
+
 # Build Next.js application
 # If you want to speed up Docker rebuilds, you can cache the build artifacts
 # by adding: --mount=type=cache,target=/app/.next/cache
