@@ -92,9 +92,6 @@ RUN apt-get update && apt-get install -y openssl
 # copy prisma migrations, config and entrypoint
 COPY --from=builder --chown=node:node /app/prisma /app/prisma
 COPY --from=builder --chown=node:node /app/prisma.config/index.mjs /app/prisma.config.mjs
-# COPY --from=builder --chown=node:node /app/node_modules/.bin/prisma /app/node_modules/.bin/
-# COPY --from=builder --chown=node:node /app/node_modules/prisma /app/node_modules/@prisma /app/node_modules/
-
 # Ensure SQLite data directory exists and is writable by the runtime user.
 # This also initializes named volumes with node ownership on first mount.
 RUN mkdir -p /data && chown node:node /data
