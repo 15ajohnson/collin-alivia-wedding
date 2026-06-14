@@ -1,0 +1,311 @@
+# RSVP Feature — Architecture Overview
+
+## 1. Context
+
+The existing RSVP form (a single name + checkbox → Google Sheets append) is being replaced with a full reservation-lookup-and-response flow. The application is a **Next.js (SSR) container** running on an **OCI Compute instance**.
+
+---
+
+## 2. High-Level User Flow
+
+```mermaid
+sequenceDiagram
+    accTitle: RSVP User Flow (Revised — Named Attendees)
+    accDescr: Sequence of interactions between the guest browser, Next.js server actions, and the database during an RSVP submission with named attendee and per-person meal selection support
+
+    actor Guest
+    participant UI as RSVP Form (Next.js)
+    participant SA as Server Action
+    participant DB as Database
+
+    Guest->>UI: Enter last name
+    UI->>SA: lookupReservation(lastName)
+    SA->>DB: SELECT * FROM reservation WHERE last_name = ?
+    DB-->>SA: 0..N reservation rows
+    alt No results
+        SA-->>UI: "Not found" message
+    else Multiple results
+        SA-->>UI: Disambiguation list (display_name options)
+        Guest->>UI: Select correct reservation
+    end
+
+    SA->>DB: SELECT id FROM rsvp WHERE reservation_id = ?
+    alt RSVP already submitted
+        SA-->>UI: "Already submitted" message
+        note over SA,DB: No further writes permitted
+    else Past deadline
+        SA-->>UI: "RSVP closed" message
+    else Open
+        SA->>DB: SELECT * FROM reservation_member WHERE reservation_id = ?
+        DB-->>SA: Named member list
+        SA-->>UI: Reservation detail (named members w/ has_plus_one and rehearsal_dinner_invited flags)
+    end
+
+    note over Guest,UI: Guest selects which named members are attending (checkboxes)
+    loop For each attending member where has_plus_one = true
+        Guest->>UI: Optionally enter plus-one name for that specific member
+    end
+
+    note over Guest,UI: For each attending person (named + plus-one)
+    Guest->>UI: Select meal_choice per attendee
+    Guest->>UI: Enter dietary_restrictions per attendee (optional)
+
+    loop For each attending named reservation member where rehearsal_dinner_invited = true
+        Guest->>UI: Select rehearsal_dinner_attending per member
+    end
+    note over Guest,UI: Plus-ones are never shown rehearsal dinner options
+
+    Guest->>UI: Submit
+    UI->>SA: submitRsvp(reservationId, attendees[])
+    SA->>DB: INSERT INTO rsvp (reservation_id, submitted_at)
+    loop For each attendee
+        SA->>DB: INSERT INTO rsvp_attendee (rsvp_id, reservation_member_id | plus_one_name | brought_by_member_id, meal_choice, dietary_restrictions, rehearsal_dinner_attending)
+    end
+    DB-->>SA: OK
+    SA-->>UI: Confirmation screen
+```
+
+Key behavioral constraints derived from requirements:
+
+| Constraint | Behavior |
+| :--- | :--- |
+| No self-service edits | Once an RSVP row exists for a reservation, the form rejects further submissions |
+| RSVP deadline | Server Action checks current date against a configurable deadline before accepting a submission |
+| Rehearsal dinner | Invitation flag lives on `RESERVATION_MEMBER`; only invited named members are shown rehearsal options. Plus-ones are never invited. Attendance is captured per invited named member. |
+| Last name collision | Lookup returns all matching `RESERVATION` rows; guest selects via `display_name` |
+| Full decline | Guest deselects all named members; no `RSVP_ATTENDEE` rows are stored |
+| Plus-one allocation | `has_plus_one` flag on `RESERVATION_MEMBER` determines which individuals may bring a plus-one; the plus-one name input is rendered inline next to that specific person |
+| Per-person meal | Each attending `RSVP_ATTENDEE` row carries its own `meal_choice` and `dietary_restrictions` to support named place cards |
+
+---
+
+## 3. Data Model
+
+```mermaid
+erDiagram
+    accTitle: RSVP Data Model (Revised — Named Attendees)
+    accDescr: Entity-relationship diagram for the wedding RSVP feature. RESERVATION and RESERVATION_MEMBER are operator-seeded. RSVP and RSVP_ATTENDEE are guest-submitted.
+
+    RESERVATION {
+        int     id                        PK
+        varchar last_name                 "indexed; used for lookup"
+        varchar display_name              "e.g. 'The Smith Family'"
+    }
+
+    RESERVATION_MEMBER {
+        int     id                        PK
+        int     reservation_id            FK
+        varchar first_name                "known at seeding time; all household members except plus-ones"
+        boolean has_plus_one              "true when this individual is allocated a plus-one seat"
+        boolean rehearsal_dinner_invited  "static flag set at seeding time per named member"
+    }
+
+    RSVP {
+        int       id              PK
+        int       reservation_id  FK  "UNIQUE — one RSVP per reservation"
+        timestamp submitted_at
+    }
+
+    RSVP_ATTENDEE {
+        int     id                     PK
+        int     rsvp_id                FK
+        int     reservation_member_id  FK  "NULL when row represents a plus-one"
+        varchar plus_one_name          "NULL for named member rows; required for plus-one rows"
+        int     brought_by_member_id   FK  "NULL for named member rows; member who brought this plus-one"
+        varchar meal_choice            "one of 3 configured options"
+        text    dietary_restrictions   "nullable; per-person free-text"
+        boolean rehearsal_dinner_attending "nullable; only for named reservation_member rows when that member is invited"
+    }
+
+    RESERVATION        ||--o{ RESERVATION_MEMBER : "has members"
+    RESERVATION        ||--o|  RSVP              : "submits"
+    RSVP               ||--o{ RSVP_ATTENDEE      : "attends"
+    RESERVATION_MEMBER ||--o|  RSVP_ATTENDEE     : "identified as"
+    RESERVATION_MEMBER ||--o{ RSVP_ATTENDEE      : "brings plus-one"
+```
+
+### 3.1 Entity Descriptions
+
+#### `RESERVATION` _(seeded by operator; not written by guests)_
+
+| Column | Type | Notes |
+| :--- | :--- | :--- |
+| `id` | INT PK | Surrogate key |
+| `last_name` | VARCHAR | **Indexed**. Case-insensitive lookup surface |
+| `display_name` | VARCHAR | Human-readable disambiguation label, e.g. `"The Smith Family"` or `"John & Jane Smith"` |
+
+> **Why it matters**: `RESERVATION` is the pre-seeded source of truth. Guests cannot create or modify it — they can only submit an `RSVP` against it. This prevents fraudulent or typo-driven records.
+
+---
+
+#### `RESERVATION_MEMBER` _(seeded by operator; one row per known household member)_
+
+| Column | Type | Notes |
+| :--- | :--- | :--- |
+| `id` | INT PK | Surrogate key |
+| `reservation_id` | INT FK | Parent reservation |
+| `first_name` | VARCHAR | Known at seeding time. Last name is inherited from `RESERVATION`. |
+| `has_plus_one` | BOOLEAN | `true` when this specific individual is allocated a plus-one seat. Default `false`. |
+| `rehearsal_dinner_invited` | BOOLEAN | Static flag; set at seeding time per named member. Default `false`. |
+
+> **Why it matters**: Pre-seeding named members drives the form's per-person UI — guests see checkboxes with real names rather than anonymous seat numbers. This is what enables named place cards at the plated dinner. The `has_plus_one` flag places the plus-one name input inline with the specific person who may bring a guest, rather than offering a generic group-level slot. The `rehearsal_dinner_invited` flag supports mixed-invite households by enabling rehearsal eligibility at the individual level. Plus-one `RSVP_ATTENDEE` rows are created at submission time, not pre-seeded.
+
+---
+
+#### `RSVP` _(one row per reservation; immutable after insert)_
+
+| Column | Type | Notes |
+| :--- | :--- | :--- |
+| `id` | INT PK | Surrogate key |
+| `reservation_id` | INT FK UNIQUE | **UNIQUE constraint** enforces one RSVP per reservation |
+| `submitted_at` | TIMESTAMP | Server-assigned on insert; not guest-supplied |
+
+> **Why it matters**: The `UNIQUE` constraint on `reservation_id` is the database-level guard against duplicate submissions — it does not rely solely on application logic. `attending_count` is no longer stored explicitly; it is derived from `COUNT(rsvp_attendee WHERE rsvp_id = ?)` when needed.
+
+---
+
+#### `RSVP_ATTENDEE` _(one row per attending person; replaces `MEAL_SELECTION`)_
+
+| Column | Type | Notes |
+| :--- | :--- | :--- |
+| `id` | INT PK | Surrogate key |
+| `rsvp_id` | INT FK | Parent RSVP |
+| `reservation_member_id` | INT FK | `NULL` when this row represents a plus-one |
+| `plus_one_name` | VARCHAR | `NULL` for named member rows. Required for plus-one rows. |
+| `brought_by_member_id` | INT FK | `NULL` for named member rows. References the `RESERVATION_MEMBER` who is bringing this plus-one. |
+| `meal_choice` | VARCHAR | One of 3 configured options (TBD) |
+| `dietary_restrictions` | TEXT | Nullable; per-person free-text |
+| `rehearsal_dinner_attending` | BOOLEAN | Nullable. Used for named member rows when that member is invited; `NULL` for plus-one rows. |
+
+> **Why it matters**: Tying meal and dietary data to a named individual (via `reservation_member_id`) or a named plus-one (via `plus_one_name`) gives the caterer and seating coordinator accurate place-card data. Capturing `rehearsal_dinner_attending` per named reservation member supports member-level headcount decisions without introducing a separate response table. `brought_by_member_id` links each plus-one back to the specific member who brought them, enabling the UI to render the plus-one input inline with that person. Plus-ones are never invited to rehearsal dinner. Three CHECK constraints apply: (1) exactly one of `reservation_member_id` or `plus_one_name` must be non-null; (2) `brought_by_member_id` must be non-null if and only if `reservation_member_id` is null; (3) `rehearsal_dinner_attending` must be null when `reservation_member_id` is null (plus-one rows).
+
+---
+
+### 3.2 What Is Intentionally Excluded
+
+- **Audit / change log** — Not needed; submissions are immutable and edits are handled out-of-band.
+- **Admin table** — No admin UI in scope for this iteration.
+- **Separate rehearsal dinner response table** — Deferred; member-level tracking is stored directly on `RSVP_ATTENDEE` for named reservation members.
+
+---
+
+## 4. Data Layer Recommendation
+
+### Decision: Self-managed SQLite with a persistent Docker volume
+
+| Factor | Assessment |
+| :--- | :--- |
+| **Scale** | 50–100 reservations, ~150 RSVP rows max. Trivially small. |
+| **Concurrency** | Wedding RSVPs are low-frequency sequential writes. SQLite's write lock is not a bottleneck. |
+| **Cost** | Zero. No managed service charges. |
+| **Ops overhead** | Zero additional infrastructure. Database is a single file mounted as a Docker volume on the existing OCI Compute instance. |
+| **Persistence** | Docker volume survives container restarts and redeployments as long as the volume is not destroyed. |
+| **Query needs** | Lookup by last name + simple inserts. No analytical queries, joins across many tables, or full-text search required. |
+| **Node.js ecosystem** | `better-sqlite3` (synchronous) or `@libsql/client` (async) are mature, well-supported drivers compatible with Next.js Server Actions. |
+
+### Why Not a Managed Service
+
+| Option | Why Deferred |
+| :--- | :--- |
+| OCI MySQL HeatWave (Always Free) | Adds a network hop, connection pool management, and IAM configuration for negligible benefit at this scale. |
+| OCI Autonomous Database | Requires Oracle Wallet and thick client in the container image — meaningful complexity increase for a 100-row dataset. |
+| PostgreSQL on a second Compute instance | Doubles compute footprint; overkill for this workload. |
+
+### Upgrade Path
+
+If a future iteration adds an admin dashboard, concurrent multi-instance deployments, or reporting, the schema is standard SQL and migrates to MySQL or PostgreSQL with no structural changes.
+
+---
+
+## 5. Interface Contract Summary
+
+| Interface | Direction | Shape |
+| :--- | :--- | :--- |
+| `lookupReservation(lastName)` | Browser → Server Action | Input: `string`; Output: `{ id, displayName, members: { id, firstName, hasPlus_one, rehearsalDinnerInvited }[] }[]` |
+| `submitRsvp(reservationId, payload)` | Browser → Server Action | Input: `{ reservationId, attendees: { reservationMemberId?, plusOneName?, broughtByMemberId?, mealChoice, dietaryRestrictions?, rehearsalDinnerAttending? }[] }`; Output: success or typed error |
+| RSVP deadline | Server-side config | Environment variable `RSVP_DEADLINE` (ISO date string); checked in Server Action before any write |
+| Duplicate guard | Database constraint | `UNIQUE(reservation_id)` on `RSVP` table — constraint violation surfaced as "already submitted" to the user |
+| Plus-one integrity | Database CHECK constraints | On `RSVP_ATTENDEE`: (1) exactly one of `reservation_member_id` or `plus_one_name` must be non-null; (2) `brought_by_member_id` must be non-null if and only if `reservation_member_id` is null |
+| Rehearsal dinner integrity | Database CHECK constraints | On `RSVP_ATTENDEE`: `rehearsal_dinner_attending` must be `NULL` for plus-one rows (`reservation_member_id IS NULL`) |
+| Rehearsal dinner eligibility | Server Action validation | Server Action verifies `rehearsalDinnerAttending` is only accepted for named attendees whose `RESERVATION_MEMBER.rehearsal_dinner_invited = true`; rejected otherwise |
+| Plus-one eligibility | Server Action validation | Server Action verifies that `broughtByMemberId` references a `RESERVATION_MEMBER` with `has_plus_one = true` before inserting |
+
+---
+
+## 6. Data Resiliency
+
+Losing RSVP data is unacceptable. The tactics below form a defense-in-depth strategy with four independent recovery layers, ordered from innermost (write-level) to outermost (off-instance backup).
+
+```mermaid
+---
+alt: "SQLite resiliency layers diagram showing defense-in-depth from WAL mode through OCI Block Volume Backups"
+---
+flowchart TD
+    accTitle: SQLite Resiliency Layers
+    accDescr: Defense-in-depth diagram for self-managed SQLite on OCI, showing four independent recovery paths from write-level crash safety through off-instance backups
+
+    App["Next.js Container"]
+
+    subgraph Instance["OCI Compute Instance"]
+        WAL["WAL Mode\n(crash-safe writes)"]
+        Integrity["Startup integrity_check\n(detect corruption early)"]
+        NamedVol["Named Docker Volume\n(no accidental wipe on redeploy)"]
+    end
+
+    subgraph BlockVol["OCI Block Volume (separate from boot)"]
+        DBFile["wedding.db\n(replicated within Availability Domain)"]
+    end
+
+    subgraph OCI["OCI Managed Services"]
+        BVBackup["Block Volume Backup Policy\n(daily snapshot, OCI-managed)"]
+        ObjStorage["Object Storage Backup\n(periodic .backup copy, Always Free tier)"]
+    end
+
+    App --> WAL --> DBFile
+    App --> Integrity
+    NamedVol --> DBFile
+    DBFile --> BVBackup
+    DBFile -->|"scheduled backup script"| ObjStorage
+
+```
+
+### 6.1 Tactic Summary
+
+| Layer | Tactic | Protects Against |
+| :--- | :--- | :--- |
+| **1 — Write safety** | Enable SQLite WAL mode | Crash or container restart mid-write corrupting the database file |
+| **2 — Startup guard** | Run `PRAGMA integrity_check` on app startup; fail fast if result ≠ `ok` | Silent corruption being compounded by further writes |
+| **3 — Volume safety** | Use a named Docker volume backed by an **OCI Block Volume** (separate from the boot volume); declare the volume `external: true` in Docker Compose | Instance reprovisioning, accidental `docker-compose down -v`, boot volume wipe |
+| **4 — Off-instance backup** | Periodic script copies the database to **OCI Object Storage** using SQLite's `.backup` command (not raw file copy) | Accidental deletion, botched deployment, volume-level corruption |
+| **4b — OCI snapshot** | Enable an **OCI Block Volume Backup Policy** (daily) | Independent second recovery path requiring no scripting |
+
+### 6.2 Backup Cadence
+
+| Window | Recommended Frequency |
+| :--- | :--- |
+| Active RSVP period | Every 15–30 minutes to Object Storage |
+| Outside RSVP period | Daily (aligned with Block Volume backup policy) |
+
+### 6.3 Key Configuration Notes
+
+- The Block Volume must be **attached separately** from the boot volume. A terminated compute instance destroys its boot volume by default.
+- Docker Compose must declare the volume as `external: true` so that `docker-compose down` (with or without `-v`) cannot destroy it silently.
+- The `.backup` SQLite API command is safe to run against a live database; a raw `cp` is not — it can produce a torn copy if a write is in flight.
+- OCI Object Storage has a 20 GB Always Free tier — more than sufficient for this dataset indefinitely.
+
+### 6.4 What Is Not Needed
+
+Replication, standby failover, or a hot backup agent are unnecessary at this scale. The four layers above provide multiple independent recovery paths with near-zero operational overhead and no meaningful additional cost.
+
+---
+
+## 7. TBD / Information Requested
+
+- **TBD-1**: The 3 meal choice option labels — needed to finalize `meal_choice` column values (enum or check constraint).
+- **TBD-2**: Seeding mechanism — will records be imported via a one-time migration script from the existing spreadsheet, or entered through a manual SQL process? This affects whether a seed script (including `RESERVATION_MEMBER` rows) needs to be part of the deliverable.
+- **TBD-3**: RSVP deadline date — needed to configure the `RSVP_DEADLINE` environment variable.
+- **TBD-4**: Dietary restrictions scope — assumed **per-person** (moved from party-wide) to align with named place cards. Confirm this is correct.
+- **TBD-5**: Children at family reservations — do any seats belong to children, and does the caterer need to distinguish child vs. adult meal options, or are the same 3 options offered to all seats regardless of age?
+
+---
+<small>Generated with GitHub Copilot as directed by collin</small>
