@@ -7,8 +7,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -577,9 +577,17 @@ function ConfirmationStep({
 // Main component
 // ---------------------------------------------------------------------------
 
-export default function RSVPForm() {
+export default function RSVPForm({}: {}) {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<Step>("lookup");
+  React.useEffect(() => {
+    const handleOpenRequest = () => setOpen(true);
+
+    window.addEventListener("open-rsvp-dialog", handleOpenRequest);
+    return () =>
+      window.removeEventListener("open-rsvp-dialog", handleOpenRequest);
+  }, []);
+
   const [disambiguationOptions, setDisambiguationOptions] =
     useState<ReservationLookupResult | null>(null);
   const [selectedReservation, setSelectedReservation] =
@@ -660,7 +668,10 @@ export default function RSVPForm() {
         <DialogTrigger asChild>
           <Button>RSVP</Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent
+          className="sm:max-w-lg"
+          onCloseAutoFocus={(event) => event.preventDefault()}
+        >
           <DialogHeader>
             <DialogTitle>{stepTitle()}</DialogTitle>
           </DialogHeader>
