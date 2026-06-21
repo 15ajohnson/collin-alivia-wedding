@@ -45,13 +45,17 @@ jobs:
     needs: [test]
     outputs:
       calver_tag: ${{ steps.calver.outputs.tag }}
-      image_tags: ${{ steps.image_metadata.outputs.tags }}
+      sha_tag: ${{ steps.sha.outputs.tag }}
       image_labels: ${{ steps.image_metadata.outputs.labels }}
     steps:
       - name: Generate calver tag
         id: calver
         run: |
           echo "tag=$(date +%Y-%m)-build" >> $GITHUB_OUTPUT
+      - name: Generate sha tag
+        id: sha
+        run: |
+          echo "tag=sha-${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
       - name: Docker metadata
         id: image_metadata
         uses: docker/metadata-action@v5
@@ -89,21 +93,14 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      - name: Prepare arch tags
-        id: arch_tags
-        run: |
-          {
-            echo "tags<<EOF"
-            while IFS= read -r tag; do
-              echo "${tag}-${{ matrix.arch }}"
-            done <<< "${{ needs.prepare-image-metadata.outputs.image_tags }}"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
       - name: Docker build and push
         uses: docker/build-push-action@v6
         with:
           file: Dockerfile
-          tags: ${{ steps.arch_tags.outputs.tags }}
+          tags: |
+            ghcr.io/15ajohnson/wedding:${{ needs.prepare-image-metadata.outputs.calver_tag }}-${{ matrix.arch }}
+            ghcr.io/15ajohnson/wedding:latest-${{ matrix.arch }}
+            ghcr.io/15ajohnson/wedding:${{ needs.prepare-image-metadata.outputs.sha_tag }}-${{ matrix.arch }}
           labels: ${{ needs.prepare-image-metadata.outputs.image_labels }}
           platforms: ${{ matrix.platform }}
           push: true
@@ -125,12 +122,20 @@ jobs:
         uses: docker/setup-buildx-action@v3
       - name: Create and push multi-arch manifests
         run: |
-          for tag in ${{ needs.prepare-image-metadata.outputs.image_tags }}; do
-            docker buildx imagetools create \
-              --tag "$tag" \
-              "${tag}-amd64" \
-              "${tag}-arm64"
-          done
+          docker buildx imagetools create \
+            --tag ghcr.io/15ajohnson/wedding:${{ needs.prepare-image-metadata.outputs.calver_tag }} \
+            ghcr.io/15ajohnson/wedding:${{ needs.prepare-image-metadata.outputs.calver_tag }}-amd64 \
+            ghcr.io/15ajohnson/wedding:${{ needs.prepare-image-metadata.outputs.calver_tag }}-arm64
+
+          docker buildx imagetools create \
+            --tag ghcr.io/15ajohnson/wedding:latest \
+            ghcr.io/15ajohnson/wedding:latest-amd64 \
+            ghcr.io/15ajohnson/wedding:latest-arm64
+
+          docker buildx imagetools create \
+            --tag ghcr.io/15ajohnson/wedding:${{ needs.prepare-image-metadata.outputs.sha_tag }} \
+            ghcr.io/15ajohnson/wedding:${{ needs.prepare-image-metadata.outputs.sha_tag }}-amd64 \
+            ghcr.io/15ajohnson/wedding:${{ needs.prepare-image-metadata.outputs.sha_tag }}-arm64
 
   deploy:
     runs-on: ubuntu-latest
