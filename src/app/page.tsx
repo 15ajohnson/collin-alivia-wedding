@@ -14,11 +14,7 @@ export default function Home() {
       {comingSoon ? (
         <ComingSoon />
       ) : (
-        <div
-          style={{
-            backgroundColor: "#F2E8DF",
-          }}
-        >
+        <div className="border-t-10 border-foreground">
           <OurStory />
           <Details />
           <RSVPForm />
