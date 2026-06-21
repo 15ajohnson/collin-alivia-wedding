@@ -34,7 +34,6 @@ RUN --mount=type=cache,target=/root/.npm \
 # ============================================
 
 FROM node:${NODE_VERSION} AS builder
-ARG COMING_SOON=true
 
 # Set working directory
 WORKDIR /app
@@ -46,7 +45,6 @@ COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
 
 ENV NODE_ENV=production
-ENV NEXT_PUBLIC_COMING_SOON=$COMING_SOON
 
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry

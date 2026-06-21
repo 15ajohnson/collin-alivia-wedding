@@ -12,6 +12,7 @@ services:
     image: ghcr.io/15ajohnson/wedding:latest
     environment:
       DATABASE_URL: file:/data/rsvp.db
+      NEXT_PUBLIC_COMING_SOON: "true"
     volumes:
       - rsvp-data:/data
     ports:
