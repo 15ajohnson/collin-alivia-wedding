@@ -25,8 +25,7 @@ function FramedImage({
           className="absolute inset-0 w-full h-full pointer-events-none"
           style={{
             objectFit: "fill",
-            transform: "rotate(-0.3deg)",
-            scale: 1.05,
+            transform: "rotate(-0.3deg) scale(1.05)",
           }}
         />
         {/* Photo on top, clipped to inner window */}
