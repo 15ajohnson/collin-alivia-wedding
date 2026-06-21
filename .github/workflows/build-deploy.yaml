@@ -83,8 +83,10 @@ jobs:
     needs: [prepare-image-metadata]
     permissions:
       packages: write
+    outputs:
+      amd64_digest: ${{ steps.collect_digest.outputs.amd64_digest }}
+      arm64_digest: ${{ steps.collect_digest.outputs.arm64_digest }}
     steps:
-      - uses: actions/checkout@v4
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -93,17 +95,19 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      - name: Docker build and push
+      - name: Docker build and push by digest
+        id: build
         uses: docker/build-push-action@v6
         with:
           file: Dockerfile
-          tags: |
-            ghcr.io/15ajohnson/wedding:${{ needs.prepare-image-metadata.outputs.calver_tag }}-${{ matrix.arch }}
-            ghcr.io/15ajohnson/wedding:latest-${{ matrix.arch }}
-            ghcr.io/15ajohnson/wedding:${{ needs.prepare-image-metadata.outputs.sha_tag }}-${{ matrix.arch }}
           labels: ${{ needs.prepare-image-metadata.outputs.image_labels }}
           platforms: ${{ matrix.platform }}
-          push: true
+          outputs: type=image,name=ghcr.io/15ajohnson/wedding,push-by-digest=true,name-canonical=true,push=true
+      - name: Collect digest output
+        id: collect_digest
+        run: |
+          # Emit one uniquely named output key per architecture so matrix outputs can be merged.
+          echo "${{ matrix.arch }}_digest=${{ steps.build.outputs.digest }}" >> "$GITHUB_OUTPUT"
 
   build-manifest:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
@@ -122,20 +126,35 @@ jobs:
         uses: docker/setup-buildx-action@v3
       - name: Create and push multi-arch manifests
         run: |
+          # Build canonical digest references from explicit per-arch job outputs.
+          amd64_digest="${{ needs.build-arch.outputs.amd64_digest }}"
+          arm64_digest="${{ needs.build-arch.outputs.arm64_digest }}"
+
+          if [[ -z "$amd64_digest" || -z "$arm64_digest" ]]; then
+            echo "Missing matrix digest outputs. amd64='$amd64_digest' arm64='$arm64_digest'"
+            exit 1
+          fi
+
+          amd64_source="ghcr.io/15ajohnson/wedding@$amd64_digest"
+          arm64_source="ghcr.io/15ajohnson/wedding@$arm64_digest"
+
+          # Publish the calver multi-arch tag.
           docker buildx imagetools create \
             --tag ghcr.io/15ajohnson/wedding:${{ needs.prepare-image-metadata.outputs.calver_tag }} \
-            ghcr.io/15ajohnson/wedding:${{ needs.prepare-image-metadata.outputs.calver_tag }}-amd64 \
-            ghcr.io/15ajohnson/wedding:${{ needs.prepare-image-metadata.outputs.calver_tag }}-arm64
+            "$amd64_source" \
+            "$arm64_source"
 
+          # Publish/refresh the latest multi-arch tag.
           docker buildx imagetools create \
             --tag ghcr.io/15ajohnson/wedding:latest \
-            ghcr.io/15ajohnson/wedding:latest-amd64 \
-            ghcr.io/15ajohnson/wedding:latest-arm64
+            "$amd64_source" \
+            "$arm64_source"
 
+          # Publish an immutable commit-derived multi-arch tag.
           docker buildx imagetools create \
             --tag ghcr.io/15ajohnson/wedding:${{ needs.prepare-image-metadata.outputs.sha_tag }} \
-            ghcr.io/15ajohnson/wedding:${{ needs.prepare-image-metadata.outputs.sha_tag }}-amd64 \
-            ghcr.io/15ajohnson/wedding:${{ needs.prepare-image-metadata.outputs.sha_tag }}-arm64
+            "$amd64_source" \
+            "$arm64_source"
 
   deploy:
     runs-on: ubuntu-latest
