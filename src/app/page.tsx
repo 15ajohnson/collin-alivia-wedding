@@ -17,7 +17,6 @@ export default function Home() {
         <div
           style={{
             backgroundColor: "#F2E8DF",
-            backgroundImage: "url('/noise-bg.svg')",
           }}
         >
           <OurStory />
