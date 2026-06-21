@@ -3,8 +3,6 @@ import { Bona_Nova, Poly, Geist } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
-const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
-
 const bonaNova = Bona_Nova({
   subsets: ["latin"],
   weight: ["400", "700"],
