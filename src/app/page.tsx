@@ -5,12 +5,15 @@ import Registry from "@/components/registry/registry";
 import RSVPForm from "@/components/rsvp/rsvp";
 import ComingSoon from "@/components/comingsoon/comingsoon";
 
-const comingSoon = process.env.NEXT_PUBLIC_COMING_SOON === "true";
+const comingSoon = process.env.COMING_SOON === "true";
+
+// force dynamic rendering to ensure environment variables are read correctly
+export const dynamic = "force-dynamic";
 
 export default function Home() {
   return (
     <div>
-      <Header />
+      <Header comingSoon={comingSoon} />
       {comingSoon ? (
         <ComingSoon />
       ) : (

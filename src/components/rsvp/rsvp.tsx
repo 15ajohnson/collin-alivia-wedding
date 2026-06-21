@@ -577,7 +577,7 @@ function ConfirmationStep({
 // Main component
 // ---------------------------------------------------------------------------
 
-export default function RSVPForm({}: {}) {
+export default function RSVPForm() {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<Step>("lookup");
   React.useEffect(() => {
