@@ -1,6 +1,10 @@
 import Nav from "../nav/nav";
 
-export default function Header() {
+interface HeaderProps {
+  comingSoon?: boolean;
+}
+
+export default function Header({ comingSoon = false }: HeaderProps) {
   return (
     <div
       className="relative w-full h-screen bg-center bg-cover bg-no-repeat flex flex-col"
@@ -12,7 +16,7 @@ export default function Header() {
       <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(28,31,22,0)_63.01%,rgba(0,0,0,0.57)_84.22%)]" />
 
       {/* Nav */}
-      <Nav />
+      <Nav comingSoon={comingSoon} />
 
       {/* Center content */}
       <div className="relative flex-1 flex flex-col items-center pb-6 md:pb-12">

@@ -17,6 +17,7 @@ services:
         condition: service_completed_successfully
     environment:
       DATABASE_URL: file:/data/rsvp.db
+      COMING_SOON: "true"
     volumes:
       - rsvp-data:/data
     ports:

@@ -10,26 +10,28 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 
-const comingSoon = process.env.NEXT_PUBLIC_COMING_SOON === "true";
-
 interface HeaderLink {
   label: string;
   href: string;
   bold?: boolean;
 }
 
-const HEADERS: HeaderLink[] = comingSoon
-  ? []
-  : [
-      { label: "DETAILS", href: "#details" },
-      { label: "OUR STORY", href: "#ourstory" },
-      { label: "RSVP", href: "#rsvp", bold: true },
-      { label: "REGISTRY", href: "#registry" },
-      { label: "GALLERY", href: "#gallery" },
-    ];
+const HEADERS: HeaderLink[] = [
+  { label: "DETAILS", href: "#details" },
+  { label: "OUR STORY", href: "#ourstory" },
+  { label: "RSVP", href: "#rsvp", bold: true },
+  { label: "REGISTRY", href: "#registry" },
+  { label: "GALLERY", href: "#gallery" },
+];
 
-export default function Nav() {
-  const mobileDrawerLinks = HEADERS.filter(({ label }) => label !== "RSVP");
+interface NavProps {
+  comingSoon?: boolean;
+}
+
+export default function Nav({ comingSoon = false }: NavProps) {
+  const headers = comingSoon ? [] : HEADERS;
+
+  const mobileDrawerLinks = headers.filter(({ label }) => label !== "RSVP");
 
   return (
     <nav className="relative z-10 px-4 pt-8 pb-4 md:px-4 md:pt-10 md:pb-6">
@@ -76,7 +78,7 @@ export default function Nav() {
 
       {/* Desktop nav */}
       <div className="hidden md:flex md:flex-wrap md:justify-center md:items-center md:gap-16">
-        {HEADERS.map(({ label, href, bold }) =>
+        {headers.map(({ label, href, bold }) =>
           label === "RSVP" ? (
             <button
               key={label}
