@@ -18,6 +18,16 @@ services:
     ports:
       - "3002:3002"
 
+  app-staging:
+    image: ghcr.io/15ajohnson/wedding:latest
+    environment:
+      DATABASE_URL: file:/data/rsvp.db
+      NEXT_PUBLIC_COMING_SOON: "false"
+    volumes:
+      - rsvp-data:/data
+    ports:
+      - "3003:3002"
+
 volumes:
   rsvp-data:
     driver: local
