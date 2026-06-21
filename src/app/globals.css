@@ -11,10 +11,25 @@
   font-style: normal;
 }
 
+@font-face {
+  font-family: "Amoresa";
+  src: url("/amoresa.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Perandory";
+  src: url("/perandory.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
+  --font-serif: var(--font-bona-nova); /* defined in root layout.tsx */
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
