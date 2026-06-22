@@ -8,7 +8,7 @@ export default function Header({ comingSoon = false }: HeaderProps) {
   return (
     <div
       className="relative w-full h-screen bg-center bg-cover bg-no-repeat flex flex-col"
-      style={{ backgroundImage: "url('/splash_header.jpg')" }}
+      style={{ backgroundImage: "url('/images/splash_header.jpg')" }}
     >
       {/* Flat 20% dark overlay */}
       <div className="absolute inset-0 bg-black/20" />

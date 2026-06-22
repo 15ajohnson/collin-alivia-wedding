@@ -19,7 +19,7 @@ function FramedImage({
       <div className="relative" style={{ aspectRatio: "1415/1599" }}>
         {/* Frame behind */}
         <img
-          src="/our-story-frame.png"
+          src="/images/our-story-frame.png"
           alt=""
           aria-hidden="true"
           className="absolute inset-0 w-full h-full pointer-events-none"
@@ -50,7 +50,7 @@ function FramedImage({
     >
       {/* Frame behind */}
       <img
-        src="/our-story-frame.png"
+        src="/images/our-story-frame.png"
         alt=""
         aria-hidden="true"
         className="absolute pointer-events-none"
@@ -95,7 +95,7 @@ export default function OurStory() {
     <section className="px-4 py-10 md:py-16">
       {/* ── Desktop layout ── */}
       <div className="hidden md:grid md:grid-cols-2 md:gap-12 md:items-center md:max-w-7xl md:mx-auto">
-        <FramedImage src="/our-story-left.jpg" alt="Collin and Alivia" />
+        <FramedImage src="/images/our-story-left.gif" alt="Collin and Alivia" />
         <div className="text-center">
           <Title className="text-[4rem] leading-none mb-8" />
           <p
@@ -116,14 +116,14 @@ export default function OurStory() {
         <div className="flex gap-2 mb-6">
           <div className="flex-1">
             <FramedImage
-              src="/our-story-left.jpg"
+              src="/images/our-story-left.gif"
               alt="Collin and Alivia"
               rotate
             />
           </div>
           <div className="flex-1">
             <FramedImage
-              src="/our-story-right.jpg"
+              src="/images/our-story-right.gif"
               alt="Collin and Alivia"
               rotate
             />

@@ -6,7 +6,7 @@
 
 @font-face {
   font-family: "Symphony Pro";
-  src: url("/symphony-pro-regular.otf") format("opentype");
+  src: url("/fonts/symphony-pro-regular.otf") format("opentype");
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -14,7 +14,7 @@
 
 @font-face {
   font-family: "Amoresa";
-  src: url("/amoresa.otf") format("opentype");
+  src: url("/fonts/amoresa.otf") format("opentype");
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -22,7 +22,7 @@
 
 @font-face {
   font-family: "Perandory";
-  src: url("/perandory.otf") format("opentype");
+  src: url("/fonts/perandory.otf") format("opentype");
   font-weight: normal;
   font-style: normal;
   font-display: swap;
