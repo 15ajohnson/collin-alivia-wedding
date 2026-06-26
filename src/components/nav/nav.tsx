@@ -36,45 +36,47 @@ export default function Nav({ comingSoon = false }: NavProps) {
   return (
     <nav className="relative z-10 px-4 pt-8 pb-4 md:px-4 md:pt-10 md:pb-6">
       {/* Mobile nav */}
-      <div className="flex items-center justify-end gap-2 md:hidden">
-        <button
-          type="button"
-          onClick={() => window.dispatchEvent(new Event("open-rsvp-dialog"))}
-          className="rounded-full border border-white/45 px-3 py-1 text-white tracking-[0.2em] text-[11px] font-bold hover:bg-white/10 transition-colors"
-          style={{ fontFamily: "var(--font-bona-nova)" }}
-        >
-          RSVP
-        </button>
+      {!comingSoon && (
+        <div className="flex items-center justify-end gap-2 md:hidden">
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new Event("open-rsvp-dialog"))}
+            className="rounded-full border border-white/45 px-3 py-1 text-white tracking-[0.2em] text-[11px] font-bold hover:bg-white/10 transition-colors"
+            style={{ fontFamily: "var(--font-bona-nova)" }}
+          >
+            RSVP
+          </button>
 
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="border border-white/35 text-white hover:bg-white/10 hover:text-white"
-              aria-label="Toggle navigation menu"
-            >
-              <MenuIcon className="size-4" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="right" className="w-56 pt-12">
-            <SheetTitle></SheetTitle>
-            <nav className="flex flex-col gap-1">
-              {mobileDrawerLinks.map(({ label, href }) => (
-                <SheetTrigger key={label} asChild>
-                  <Link
-                    href={href}
-                    className="rounded px-3 py-2 text-right tracking-[0.16em] text-sm font-light hover:bg-muted transition-colors"
-                    style={{ fontFamily: "var(--font-bona-nova)" }}
-                  >
-                    {label}
-                  </Link>
-                </SheetTrigger>
-              ))}
-            </nav>
-          </SheetContent>
-        </Sheet>
-      </div>
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className="border border-white/35 text-white hover:bg-white/10 hover:text-white"
+                aria-label="Toggle navigation menu"
+              >
+                <MenuIcon className="size-4" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-56 pt-12">
+              <SheetTitle></SheetTitle>
+              <nav className="flex flex-col gap-1">
+                {mobileDrawerLinks.map(({ label, href }) => (
+                  <SheetTrigger key={label} asChild>
+                    <Link
+                      href={href}
+                      className="rounded px-3 py-2 text-right tracking-[0.16em] text-sm font-light hover:bg-muted transition-colors"
+                      style={{ fontFamily: "var(--font-bona-nova)" }}
+                    >
+                      {label}
+                    </Link>
+                  </SheetTrigger>
+                ))}
+              </nav>
+            </SheetContent>
+          </Sheet>
+        </div>
+      )}
 
       {/* Desktop nav */}
       <div className="hidden md:flex md:flex-wrap md:justify-center md:items-center md:gap-16">
