@@ -2,7 +2,6 @@ import Details from "@/components/details/details";
 import Header from "@/components/header/header";
 import OurStory from "@/components/ourstory/ourstory";
 import Registry from "@/components/registry/registry";
-import RSVPForm from "@/components/rsvp/rsvp-form";
 import ComingSoon from "@/components/comingsoon/comingsoon";
 import RSVP from "@/components/rsvp/rsvp";
 

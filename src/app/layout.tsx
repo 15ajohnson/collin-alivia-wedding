@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Bona_Nova, Poly, Geist } from "next/font/google";
+import { Bona_Nova, Poly } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
