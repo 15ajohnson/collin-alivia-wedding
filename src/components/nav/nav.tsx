@@ -9,6 +9,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { OPEN_RSVP_DIALOG_EVENT } from "@/constants/client-events";
 
 interface HeaderLink {
   label: string;
@@ -40,7 +41,9 @@ export default function Nav({ comingSoon = false }: NavProps) {
         <div className="flex items-center justify-end gap-2 md:hidden">
           <button
             type="button"
-            onClick={() => window.dispatchEvent(new Event("open-rsvp-dialog"))}
+            onClick={() =>
+              window.dispatchEvent(new Event(OPEN_RSVP_DIALOG_EVENT))
+            }
             className="rounded-full border border-white/45 px-3 py-1 text-white tracking-[0.2em] text-[11px] font-bold hover:bg-white/10 transition-colors"
             style={{ fontFamily: "var(--font-bona-nova)" }}
           >
@@ -86,7 +89,7 @@ export default function Nav({ comingSoon = false }: NavProps) {
               key={label}
               type="button"
               onClick={() =>
-                window.dispatchEvent(new Event("open-rsvp-dialog"))
+                window.dispatchEvent(new Event(OPEN_RSVP_DIALOG_EVENT))
               }
               className={`text-white tracking-[0.2em] text-base hover:opacity-70 transition-opacity ${bold ? "font-bold md:text-xl" : "font-light"}`}
               style={{ fontFamily: "var(--font-bona-nova)" }}
