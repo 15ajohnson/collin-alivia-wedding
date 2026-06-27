@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { OPEN_RSVP_DIALOG_EVENT } from "@/constants/client-events";
 import RSVPForm from "./rsvp-form";
+import React from "react";
 
 const WEDDING_DATE = new Date("2026-09-21T15:30:00-04:00");
 
@@ -27,20 +28,14 @@ export default function RSVP() {
     hours: number;
     minutes: number;
     seconds: number;
-  } | null>(null);
+  }>(getTimeRemaining);
 
   useEffect(() => {
-    setTimeLeft(getTimeRemaining());
     const id = setInterval(() => setTimeLeft(getTimeRemaining()), 1000);
     return () => clearInterval(id);
   }, []);
 
-  const { days, hours, minutes, seconds } = timeLeft ?? {
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-  };
+  const { days, hours, minutes, seconds } = timeLeft;
 
   return (
     <>
@@ -106,7 +101,7 @@ export default function RSVP() {
                 { value: minutes, label: "Minutes" },
                 { value: seconds, label: "Seconds" },
               ].map(({ value, label }, i) => (
-                <>
+                <React.Fragment key={label}>
                   {i > 0 && (
                     <span
                       key={`sep-${label}`}
@@ -129,7 +124,7 @@ export default function RSVP() {
                       {label}
                     </span>
                   </div>
-                </>
+                </React.Fragment>
               ))}
             </div>
           </div>
