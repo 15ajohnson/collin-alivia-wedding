@@ -20,7 +20,7 @@ interface HeaderLink {
 const HEADERS: HeaderLink[] = [
   { label: "DETAILS", href: "#details" },
   { label: "OUR STORY", href: "#ourstory" },
-  { label: "RSVP", href: "#rsvp", bold: true },
+  { label: "RSVP", href: "#rsvp" },
   { label: "REGISTRY", href: "#registry" },
   { label: "GALLERY", href: "#gallery" },
 ];
@@ -82,7 +82,7 @@ export default function Nav({ comingSoon = false }: NavProps) {
       )}
 
       {/* Desktop nav */}
-      <div className="hidden md:flex md:flex-wrap md:justify-center md:items-center md:gap-16">
+      <div className="hidden md:flex md:flex-wrap md:justify-center md:items-center md:gap-16 md:align-middle">
         {headers.map(({ label, href, bold }) =>
           label === "RSVP" ? (
             <button
@@ -91,7 +91,7 @@ export default function Nav({ comingSoon = false }: NavProps) {
               onClick={() =>
                 window.dispatchEvent(new Event(OPEN_RSVP_DIALOG_EVENT))
               }
-              className={`text-white tracking-[0.2em] text-base hover:opacity-70 transition-opacity ${bold ? "font-bold md:text-xl" : "font-light"}`}
+              className={`text-white tracking-[0.2em] text-2xl hover:opacity-70 transition-opacity italic ${bold ? "font-bold md:text-xl" : "font-light"}`}
               style={{ fontFamily: "var(--font-bona-nova)" }}
             >
               {label}

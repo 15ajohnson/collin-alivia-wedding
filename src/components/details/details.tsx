@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -44,11 +43,20 @@ export default function Details() {
 
   return (
     <section
-      className="overflow-hidden flex flex-col"
+      className="relative overflow-hidden py-16 px-4 h-300"
       style={{ backgroundColor: "#183C4C" }}
     >
-      {/* Content band — sits in the solid #183C4C area above the greenhouse */}
-      <div className="py-16 px-4">
+      {/* Greenhouse image anchored to bottom; solid #183C4C fills above it */}
+      <img
+        src="/images/details-greenhouse-bg.png"
+        alt=""
+        aria-hidden="true"
+        className="absolute bottom-0 left-0 w-full pointer-events-none"
+        style={{ height: "auto", zIndex: 0 }}
+      />
+
+      {/* All content sits above the background image */}
+      <div className="relative" style={{ zIndex: 1 }}>
         <Title />
 
         {/* Tab navigation */}
@@ -85,14 +93,6 @@ export default function Details() {
           </p>
         </div>
       </div>
-
-      {/* Greenhouse image band — fixed height so content above never overlaps the building */}
-      <img
-        src="/images/details-greenhouse-bg.png"
-        alt="The greenhouse venue"
-        className="w-full"
-        style={{ height: "320px", objectFit: "cover", objectPosition: "top", display: "block" }}
-      />
     </section>
   );
 }
