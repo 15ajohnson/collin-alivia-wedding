@@ -1,4 +1,18 @@
 
+function Title() {
+  return (
+    <h2
+      className="text-[2.5rem] md:text-[4rem] leading-none text-center"
+      style={{ color: "var(--background)" }}
+    >
+      <span style={{ fontFamily: "Amoresa" }}>T</span>
+      <span style={{ fontFamily: "Perandory" }}>he </span>
+      <span style={{ fontFamily: "Amoresa" }}>D</span>
+      <span style={{ fontFamily: "Perandory" }}>etails</span>
+    </h2>
+  );
+}
+
 export default function Details() {
   return (
     <section
@@ -16,7 +30,7 @@ export default function Details() {
 
       {/* All content sits above the background image */}
       <div className="relative" style={{ zIndex: 1 }}>
-        <p style={{ color: "var(--background)" }}>Content coming soon.</p>
+        <Title />
       </div>
     </section>
   );
