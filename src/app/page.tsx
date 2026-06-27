@@ -18,10 +18,14 @@ export default function Home() {
       {comingSoon ? (
         <ComingSoon />
       ) : (
-        <div className="border-t-10 border-foreground">
-          <OurStory />
+        <div>
+          <div className="border-t-10 border-foreground">
+            <OurStory />
+          </div>
+          <div className="border-t-10 border-foreground">
+            <RSVP />
+          </div>
           <Details />
-          <RSVP />
           <Registry />
         </div>
       )}
