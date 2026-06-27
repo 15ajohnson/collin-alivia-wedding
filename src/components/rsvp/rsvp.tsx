@@ -22,15 +22,19 @@ function pad(n: number) {
   return String(n).padStart(2, "0");
 }
 
+const ZERO = { days: 0, hours: 0, minutes: 0, seconds: 0 };
+
 export default function RSVP() {
   const [timeLeft, setTimeLeft] = useState<{
     days: number;
     hours: number;
     minutes: number;
     seconds: number;
-  }>(getTimeRemaining);
+  }>(ZERO);
 
   useEffect(() => {
+    // Populate immediately on mount to avoid SSR/client mismatch, then tick.
+    setTimeLeft(getTimeRemaining());
     const id = setInterval(() => setTimeLeft(getTimeRemaining()), 1000);
     return () => clearInterval(id);
   }, []);
