@@ -1,9 +1,23 @@
 
 export default function Details() {
-    return (
-        <div className="container mx-auto p-4">
-            <h1 className="text-2xl mb-4">Details</h1>
-            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Impedit at velit vel, veritatis esse blanditiis similique! Mollitia amet nisi error maxime sapiente eos! Excepturi velit distinctio laudantium ullam officia facilis.</p>
-        </div>
-    );
+  return (
+    <section
+      className="relative overflow-hidden py-16 px-4"
+      style={{ backgroundColor: "#183C4C" }}
+    >
+      {/* Greenhouse image anchored to bottom; solid #183C4C fills above it */}
+      <img
+        src="/images/details-greenhouse-bg.png"
+        alt=""
+        aria-hidden="true"
+        className="absolute bottom-0 left-0 w-full pointer-events-none"
+        style={{ height: "auto", zIndex: 0 }}
+      />
+
+      {/* All content sits above the background image */}
+      <div className="relative" style={{ zIndex: 1 }}>
+        <p style={{ color: "var(--background)" }}>Content coming soon.</p>
+      </div>
+    </section>
+  );
 }
