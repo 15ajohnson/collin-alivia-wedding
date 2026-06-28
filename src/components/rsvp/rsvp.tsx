@@ -97,7 +97,7 @@ export default function RSVP() {
                 { value: minutes, label: "Minutes" },
                 { value: seconds, label: "Seconds" },
               ].map(({ value, label }, i) => (
-                <React.Fragment key={label}>
+                <div key={label}>
                   {i > 0 && (
                     <span
                       key={`sep-${label}`}
@@ -120,7 +120,7 @@ export default function RSVP() {
                       {label}
                     </span>
                   </div>
-                </React.Fragment>
+                </div>
               ))}
             </div>
           </div>

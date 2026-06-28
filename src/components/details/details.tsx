@@ -43,18 +43,12 @@ export default function Details() {
 
   return (
     <section
-      className="relative overflow-hidden py-16 px-4 h-300"
-      style={{ backgroundColor: "#183C4C" }}
+      className="relative overflow-hidden bg-no-repeat bg-cover bg-position-[center_bottom_-100px] 2xl:bg-position-[center_bottom_-250px] pt-16 pb-100 px-4"
+      style={{
+        backgroundColor: "#183C4C",
+        backgroundImage: "url('/images/details-greenhouse-bg.png')",
+      }}
     >
-      {/* Greenhouse image anchored to bottom; solid #183C4C fills above it */}
-      <img
-        src="/images/details-greenhouse-bg.png"
-        alt=""
-        aria-hidden="true"
-        className="absolute bottom-0 left-0 w-full pointer-events-none"
-        style={{ height: "auto", zIndex: 0 }}
-      />
-
       {/* All content sits above the background image */}
       <div className="relative" style={{ zIndex: 1 }}>
         <Title />
@@ -81,7 +75,7 @@ export default function Details() {
 
         {/* Content panel */}
         <div
-          className="max-w-4xl mx-auto p-8 md:p-10 min-h-64"
+          className="max-w-4xl mx-auto p-8 md:p-10 min-h-128"
           style={{
             border: "1px solid var(--background)",
             background: "transparent",
