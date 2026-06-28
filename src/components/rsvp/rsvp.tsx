@@ -28,14 +28,20 @@ export default function RSVP() {
     hours: number;
     minutes: number;
     seconds: number;
-  }>(getTimeRemaining);
+  } | null>(null);
 
   useEffect(() => {
+    setTimeLeft(getTimeRemaining());
     const id = setInterval(() => setTimeLeft(getTimeRemaining()), 1000);
     return () => clearInterval(id);
   }, []);
 
-  const { days, hours, minutes, seconds } = timeLeft;
+  const { days, hours, minutes, seconds } = timeLeft ?? {
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  };
 
   return (
     <>
@@ -97,7 +103,7 @@ export default function RSVP() {
                 { value: minutes, label: "Minutes" },
                 { value: seconds, label: "Seconds" },
               ].map(({ value, label }, i) => (
-                <div key={label}>
+                <React.Fragment key={label}>
                   {i > 0 && (
                     <span
                       key={`sep-${label}`}
@@ -120,7 +126,7 @@ export default function RSVP() {
                       {label}
                     </span>
                   </div>
-                </div>
+                </React.Fragment>
               ))}
             </div>
           </div>
