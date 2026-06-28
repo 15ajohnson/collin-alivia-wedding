@@ -59,7 +59,7 @@ export default function Details() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className="uppercase tracking-widest text-xs md:text-sm transition-all cursor-pointer bg-transparent border-0 p-0"
+              className="uppercase tracking-widest text-xs md:text-sm transition-all cursor-pointer bg-transparent border-0 p-0 flex flex-col items-center"
               style={{
                 color:
                   activeTab === tab.id
@@ -68,6 +68,13 @@ export default function Details() {
                 fontWeight: activeTab === tab.id ? 700 : 400,
               }}
             >
+              {/* Hidden bold copy reserves the bold width so switching tabs doesn't shift layout */}
+              <span
+                className="invisible h-0 overflow-hidden font-bold"
+                aria-hidden="true"
+              >
+                {tab.label}
+              </span>
               {tab.label}
             </button>
           ))}
