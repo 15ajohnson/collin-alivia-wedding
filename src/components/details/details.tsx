@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 
 const TABS = [
   { id: "itinerary", label: "Itinerary" },
@@ -94,6 +95,23 @@ export default function Details() {
           </p>
         </div>
       </div>
+      {/* the "footer" */}
+      <footer className="absolute bottom-0 w-full text-white flex items-center justify-center gap-3 py-4 text-sm">
+        <a
+          href="https://github.com/15ajohnson/collin-alivia-wedding"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="GitHub repository"
+          className="hover:text-foreground transition-colors"
+        >
+          <Image
+            src="/images/GitHub_Invertocat_White.svg"
+            alt="GitHub"
+            width={24}
+            height={24}
+          />
+        </a>
+      </footer>
     </section>
   );
 }

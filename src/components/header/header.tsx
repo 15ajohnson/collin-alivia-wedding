@@ -19,23 +19,23 @@ export default function Header({ comingSoon = false }: HeaderProps) {
       <Nav comingSoon={comingSoon} />
 
       {/* Center content */}
-      <div className="relative flex-1 flex flex-col items-center pb-6 md:pb-12">
+      <div className="relative flex-1 flex flex-col items-center py-6 md:pb-12s">
         {/* Names — centered in whatever space remains */}
-        <div className="flex-1 flex flex-col items-center justify-center text-center">
+        <div className="flex flex-2 flex-col items-center justify-center text-center">
           <h1
-            className="text-[4.5rem] md:text-[9rem] font-light leading-none text-[#f5f0e8] tracking-tighter"
+            className="text-[4.5rem] md:text-[7rem] font-light leading-none text-[#f5f0e8] tracking-tighter"
             style={{ fontFamily: "var(--font-bona-nova)" }}
           >
             COLLIN
           </h1>
           <p
-            className="text-[4.5rem] md:text-[9rem] font-light leading-none text-[#f5f0e8] -mt-6 md:-mt-16"
+            className="text-[4.5rem] md:text-[7rem] font-light leading-none text-[#f5f0e8] -mt-6 md:-mt-14"
             style={{ fontFamily: "'Symphony Pro', serif" }}
           >
             and
           </p>
           <h1
-            className="text-[4.5rem] md:text-[9rem] font-light leading-none text-[#f5f0e8] tracking-tighter -mt-4 md:-mt-12"
+            className="text-[4.5rem] md:text-[7rem] font-light leading-none text-[#f5f0e8] tracking-tighter -mt-4 md:-mt-10"
             style={{ fontFamily: "var(--font-bona-nova)" }}
           >
             ALIVIA
@@ -49,7 +49,7 @@ export default function Header({ comingSoon = false }: HeaderProps) {
         </div>
         {/* Date — always anchored to the bottom of the image */}
         <p
-          className="text-[1.1rem] md:text-[2rem] tracking-[0.4em] text-[#f5f0e8] font-light"
+          className="flex-1 text-[1.1rem] md:text-[2rem] tracking-[0.4em] text-[#f5f0e8] font-light"
           style={{ fontFamily: "var(--font-poly)" }}
         >
           09.12.2026
