@@ -24,7 +24,7 @@ export default function Home() {
           <div id="rsvp" className="border-t-10 border-foreground">
             <RSVP />
           </div>
-          <div id="details" className="border-t-10 border-foreground">
+          <div id="details">
             <Details />
           </div>
         </div>
