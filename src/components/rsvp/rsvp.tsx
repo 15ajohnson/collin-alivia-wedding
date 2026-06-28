@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { OPEN_RSVP_DIALOG_EVENT } from "@/constants/client-events";
 import RSVPForm from "./rsvp-form";
 import React from "react";
@@ -22,26 +22,37 @@ function pad(n: number) {
   return String(n).padStart(2, "0");
 }
 
+const ZERO_TIME = { days: 0, hours: 0, minutes: 0, seconds: 0 };
+
+let cachedSnapshot = ZERO_TIME;
+
+function getSnapshot() {
+  const next = getTimeRemaining();
+  if (
+    next.days === cachedSnapshot.days &&
+    next.hours === cachedSnapshot.hours &&
+    next.minutes === cachedSnapshot.minutes &&
+    next.seconds === cachedSnapshot.seconds
+  ) {
+    return cachedSnapshot;
+  }
+  cachedSnapshot = next;
+  return cachedSnapshot;
+}
+
+function subscribe(callback: () => void) {
+  const id = setInterval(callback, 1000);
+  return () => clearInterval(id);
+}
+
 export default function RSVP() {
-  const [timeLeft, setTimeLeft] = useState<{
-    days: number;
-    hours: number;
-    minutes: number;
-    seconds: number;
-  } | null>(null);
+  const timeLeft = useSyncExternalStore(
+    subscribe,
+    getSnapshot,
+    () => ZERO_TIME,
+  );
 
-  useEffect(() => {
-    setTimeLeft(getTimeRemaining());
-    const id = setInterval(() => setTimeLeft(getTimeRemaining()), 1000);
-    return () => clearInterval(id);
-  }, []);
-
-  const { days, hours, minutes, seconds } = timeLeft ?? {
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-  };
+  const { days, hours, minutes, seconds } = timeLeft;
 
   return (
     <>
