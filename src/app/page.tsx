@@ -1,7 +1,6 @@
 import Details from "@/components/details/details";
 import Header from "@/components/header/header";
 import OurStory from "@/components/ourstory/ourstory";
-import Registry from "@/components/registry/registry";
 import ComingSoon from "@/components/comingsoon/comingsoon";
 import RSVP from "@/components/rsvp/rsvp";
 
@@ -18,14 +17,15 @@ export default function Home() {
         <ComingSoon />
       ) : (
         <div>
-          <div className="border-t-10 border-foreground">
+          <div id="ourstory" className="border-t-10 border-foreground">
             <OurStory />
           </div>
-          <div className="border-t-10 border-foreground">
+          <div id="rsvp" className="border-t-10 border-foreground">
             <RSVP />
           </div>
-          <Details />
-          <Registry />
+          <div id="details">
+            <Details />
+          </div>
         </div>
       )}
     </div>

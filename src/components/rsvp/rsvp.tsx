@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { OPEN_RSVP_DIALOG_EVENT } from "@/constants/client-events";
 import RSVPForm from "./rsvp-form";
 import React from "react";
 
-const WEDDING_DATE = new Date("2026-09-21T15:30:00-04:00");
+const WEDDING_DATE = new Date("2026-09-12T15:30:00-04:00");
 
 function getTimeRemaining() {
   const total = WEDDING_DATE.getTime() - Date.now();
@@ -22,18 +22,35 @@ function pad(n: number) {
   return String(n).padStart(2, "0");
 }
 
-export default function RSVP() {
-  const [timeLeft, setTimeLeft] = useState<{
-    days: number;
-    hours: number;
-    minutes: number;
-    seconds: number;
-  }>(getTimeRemaining);
+const ZERO_TIME = { days: 0, hours: 0, minutes: 0, seconds: 0 };
 
-  useEffect(() => {
-    const id = setInterval(() => setTimeLeft(getTimeRemaining()), 1000);
-    return () => clearInterval(id);
-  }, []);
+let cachedSnapshot = ZERO_TIME;
+
+function getSnapshot() {
+  const next = getTimeRemaining();
+  if (
+    next.days === cachedSnapshot.days &&
+    next.hours === cachedSnapshot.hours &&
+    next.minutes === cachedSnapshot.minutes &&
+    next.seconds === cachedSnapshot.seconds
+  ) {
+    return cachedSnapshot;
+  }
+  cachedSnapshot = next;
+  return cachedSnapshot;
+}
+
+function subscribe(callback: () => void) {
+  const id = setInterval(callback, 1000);
+  return () => clearInterval(id);
+}
+
+export default function RSVP() {
+  const timeLeft = useSyncExternalStore(
+    subscribe,
+    getSnapshot,
+    () => ZERO_TIME,
+  );
 
   const { days, hours, minutes, seconds } = timeLeft;
 
@@ -75,12 +92,8 @@ export default function RSVP() {
               }
               className="mt-2 rounded-full bg-[#521717] text-background text-xl tracking-wide flex items-center justify-center text-center leading-tight hover:bg-[#3a1010] transition-colors cursor-pointer border-2 border-background md:border-0 px-8 py-2 md:px-0 md:py-0 md:w-24 md:h-24"
             >
-              <span className="md:hidden">RSVP Here</span>
-              <span className="hidden md:inline text-lg">
-                RSVP
-                <br />
-                Here
-              </span>
+              <span className="md:hidden">RSVP</span>
+              <span className="hidden md:inline text-2xl">RSVP</span>
             </button>
           </div>
 
