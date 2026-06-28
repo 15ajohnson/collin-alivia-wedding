@@ -18,8 +18,8 @@ interface HeaderLink {
 }
 
 const HEADERS: HeaderLink[] = [
-  { label: "DETAILS", href: "#details" },
   { label: "OUR STORY", href: "#ourstory" },
+  { label: "DETAILS", href: "#details" },
   { label: "RSVP", href: "#rsvp" },
   { label: "REGISTRY", href: "#registry" },
   { label: "GALLERY", href: "#gallery" },
