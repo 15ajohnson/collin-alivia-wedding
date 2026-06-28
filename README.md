@@ -1,6 +1,8 @@
 # Collin & Alivia's Wedding
 
-<img src="/public/images/splash_header.jpg" alt="Collin and Alivia" width="200px">
+<p align="center">
+    <img src="/public/images/splash_header.jpg" alt="Collin and Alivia" width="300px">
+</p>
 
 ### Node
 
