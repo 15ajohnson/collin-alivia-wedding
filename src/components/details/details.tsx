@@ -43,7 +43,7 @@ export default function Details() {
 
   return (
     <section
-      className="relative overflow-hidden bg-no-repeat bg-cover bg-position-[center_bottom_-100px] 2xl:bg-position-[center_bottom_-250px] pt-16 pb-100 px-4"
+      className="relative overflow-hidden bg-no-repeat bg-contain bg-bottom md:bg-cover md:bg-position-[center_bottom_-100px] 2xl:bg-position-[center_bottom_-250px] pt-16 pb-50 md:pb-100 px-4"
       style={{
         backgroundColor: "#183C4C",
         backgroundImage: "url('/images/details-greenhouse-bg.png')",
@@ -82,7 +82,7 @@ export default function Details() {
 
         {/* Content panel */}
         <div
-          className="max-w-4xl mx-auto p-8 md:p-10 min-h-128"
+          className="max-w-4xl mx-auto p-8 md:p-10 md:min-h-128"
           style={{
             border: "1px solid var(--background)",
             background: "transparent",
