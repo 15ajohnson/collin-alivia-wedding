@@ -1,5 +1,6 @@
 # Collin & Alivia's Wedding
 
+![Collin and Alivia](/public/images/splash_header.jpg | width=200)
 
 ### Node
 
