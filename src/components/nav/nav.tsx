@@ -35,7 +35,7 @@ export default function Nav({ comingSoon = false }: NavProps) {
   const mobileDrawerLinks = headers.filter(({ label }) => label !== "RSVP");
 
   return (
-    <nav className="relative z-10 px-4 pt-8 pb-4 md:px-4 md:pt-10 md:pb-6">
+    <nav className="hero-load hero-load-stage-1 relative z-10 px-4 pt-8 pb-4 md:px-4 md:pt-10 md:pb-6">
       {/* Mobile nav */}
       {!comingSoon && (
         <div className="flex items-center justify-end gap-2 md:hidden">
