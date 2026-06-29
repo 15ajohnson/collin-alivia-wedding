@@ -4,6 +4,7 @@ import { type ComponentType, useState } from "react";
 import Image from "next/image";
 import ItineraryContent from "./itinerary-content";
 import AccommodationsContent from "./accommodations-content";
+import AttireContent from "./attire-content";
 
 const TABS = [
   { id: "itinerary", label: "Itinerary" },
@@ -13,16 +14,6 @@ const TABS = [
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
-
-function AttireContent() {
-  return (
-    <p className="text-sm md:text-base leading-relaxed">
-      In id cursus mi pretium tellus duis convallis. Tempus leo eu aenean sed
-      diam urna tempor. Iaculis massa nisl malesuada lacinia integer nunc
-      posuere. Ut hendrerit semper vel class aptent taciti sociosqu.
-    </p>
-  );
-}
 
 function FaqContent() {
   return (
