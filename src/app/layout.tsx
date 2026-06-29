@@ -17,7 +17,7 @@ const poly = Poly({
 
 const playfairDisplay = Playfair_Display({
   subsets: ["latin"],
-  weight: ["400", "700"],
+  weight: ["400", "600", "700"],
   variable: "--font-playfair-display",
 });
 
