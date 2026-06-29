@@ -2,6 +2,7 @@
 
 import { type ComponentType, useState } from "react";
 import Image from "next/image";
+import ItineraryContent from "./itinerary-content";
 
 const TABS = [
   { id: "itinerary", label: "Itinerary" },
@@ -11,17 +12,6 @@ const TABS = [
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
-
-function ItineraryContent() {
-  return (
-    <p className="text-sm md:text-base leading-relaxed">
-      Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisque faucibus
-      ex sapien vitae pellentesque sem placerat. In id cursus mi pretium tellus
-      duis convallis. Tempus leo eu aenean sed diam urna tempor. Pulvinar
-      vivamus fringilla lacus nec metus bibendum egestas.
-    </p>
-  );
-}
 
 function AccommodationsContent() {
   return (
@@ -120,13 +110,13 @@ export default function Details() {
 
         {/* Content panel */}
         <div
-          className="max-w-4xl mx-auto p-2"
+          className="max-w-10/12 mx-auto p-2"
           style={{
             border: "1px solid rgba(255, 255, 255, 0.6)",
           }}
         >
           <div
-            className="p-8 md:p-10 md:min-h-128"
+            className="p-8 md:p-10 md:min-h-128 flex justify-center"
             style={{
               border: "1px solid rgba(255, 255, 255, 0.6)",
               background: "transparent",
