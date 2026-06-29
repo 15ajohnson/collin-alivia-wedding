@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { type ComponentType, useState } from "react";
 import Image from "next/image";
 
 const TABS = [
@@ -12,14 +12,53 @@ const TABS = [
 
 type TabId = (typeof TABS)[number]["id"];
 
-const TAB_CONTENT: Record<TabId, string> = {
-  itinerary:
-    "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisque faucibus ex sapien vitae pellentesque sem placerat. In id cursus mi pretium tellus duis convallis. Tempus leo eu aenean sed diam urna tempor. Pulvinar vivamus fringilla lacus nec metus bibendum egestas.",
-  accommodations:
-    "Pulvinar vivamus fringilla lacus nec metus bibendum egestas. Quisque faucibus ex sapien vitae pellentesque sem placerat. In id cursus mi pretium tellus duis convallis. Tempus leo eu aenean sed diam urna tempor.",
-  attire:
-    "In id cursus mi pretium tellus duis convallis. Tempus leo eu aenean sed diam urna tempor. Iaculis massa nisl malesuada lacinia integer nunc posuere. Ut hendrerit semper vel class aptent taciti sociosqu.",
-  faq: "Ut hendrerit semper vel class aptent taciti sociosqu. Ad litora torquent per conubia nostra inceptos himenaeos. Pulvinar vivamus fringilla lacus nec metus bibendum egestas. Quisque faucibus ex sapien vitae pellentesque sem placerat.",
+function ItineraryContent() {
+  return (
+    <p className="text-sm md:text-base leading-relaxed">
+      Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisque faucibus
+      ex sapien vitae pellentesque sem placerat. In id cursus mi pretium tellus
+      duis convallis. Tempus leo eu aenean sed diam urna tempor. Pulvinar
+      vivamus fringilla lacus nec metus bibendum egestas.
+    </p>
+  );
+}
+
+function AccommodationsContent() {
+  return (
+    <p className="text-sm md:text-base leading-relaxed">
+      Pulvinar vivamus fringilla lacus nec metus bibendum egestas. Quisque
+      faucibus ex sapien vitae pellentesque sem placerat. In id cursus mi
+      pretium tellus duis convallis. Tempus leo eu aenean sed diam urna tempor.
+    </p>
+  );
+}
+
+function AttireContent() {
+  return (
+    <p className="text-sm md:text-base leading-relaxed">
+      In id cursus mi pretium tellus duis convallis. Tempus leo eu aenean sed
+      diam urna tempor. Iaculis massa nisl malesuada lacinia integer nunc
+      posuere. Ut hendrerit semper vel class aptent taciti sociosqu.
+    </p>
+  );
+}
+
+function FaqContent() {
+  return (
+    <p className="text-sm md:text-base leading-relaxed">
+      Ut hendrerit semper vel class aptent taciti sociosqu. Ad litora torquent
+      per conubia nostra inceptos himenaeos. Pulvinar vivamus fringilla lacus
+      nec metus bibendum egestas. Quisque faucibus ex sapien vitae pellentesque
+      sem placerat.
+    </p>
+  );
+}
+
+const TAB_COMPONENTS: Record<TabId, ComponentType> = {
+  itinerary: ItineraryContent,
+  accommodations: AccommodationsContent,
+  attire: AttireContent,
+  faq: FaqContent,
 };
 
 function Title() {
@@ -38,6 +77,7 @@ function Title() {
 
 export default function Details() {
   const [activeTab, setActiveTab] = useState<TabId>("itinerary");
+  const ActiveTabContent = TAB_COMPONENTS[activeTab];
 
   return (
     <section
@@ -87,9 +127,7 @@ export default function Details() {
             color: "var(--background)",
           }}
         >
-          <p className="text-sm md:text-base leading-relaxed">
-            {TAB_CONTENT[activeTab]}
-          </p>
+          <ActiveTabContent />
         </div>
       </div>
       {/* the "footer" */}
