@@ -120,14 +120,21 @@ export default function Details() {
 
         {/* Content panel */}
         <div
-          className="max-w-4xl mx-auto p-8 md:p-10 md:min-h-128"
+          className="max-w-4xl mx-auto p-2"
           style={{
-            border: "1px solid var(--background)",
-            background: "transparent",
-            color: "var(--background)",
+            border: "1px solid rgba(255, 255, 255, 0.6)",
           }}
         >
-          <ActiveTabContent />
+          <div
+            className="p-8 md:p-10 md:min-h-128"
+            style={{
+              border: "1px solid rgba(255, 255, 255, 0.6)",
+              background: "transparent",
+              color: "var(--background)",
+            }}
+          >
+            <ActiveTabContent />
+          </div>
         </div>
       </div>
       {/* the "footer" */}
