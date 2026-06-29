@@ -5,7 +5,6 @@ import Image from "next/image";
 
 const TABS = [
   { id: "itinerary", label: "Itinerary" },
-  { id: "date-location", label: "Date & Location" },
   { id: "accommodations", label: "Accommodations" },
   { id: "attire", label: "Attire" },
   { id: "faq", label: "FAQ" },
@@ -16,8 +15,6 @@ type TabId = (typeof TABS)[number]["id"];
 const TAB_CONTENT: Record<TabId, string> = {
   itinerary:
     "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisque faucibus ex sapien vitae pellentesque sem placerat. In id cursus mi pretium tellus duis convallis. Tempus leo eu aenean sed diam urna tempor. Pulvinar vivamus fringilla lacus nec metus bibendum egestas.",
-  "date-location":
-    "Iaculis massa nisl malesuada lacinia integer nunc posuere. Ut hendrerit semper vel class aptent taciti sociosqu. Ad litora torquent per conubia nostra inceptos himenaeos. Lorem ipsum dolor sit amet consectetur adipisicing elit.",
   accommodations:
     "Pulvinar vivamus fringilla lacus nec metus bibendum egestas. Quisque faucibus ex sapien vitae pellentesque sem placerat. In id cursus mi pretium tellus duis convallis. Tempus leo eu aenean sed diam urna tempor.",
   attire:
@@ -55,7 +52,7 @@ export default function Details() {
         <Title />
 
         {/* Tab navigation */}
-        <nav className="flex flex-wrap justify-center gap-6 md:gap-8 mt-8 mb-6">
+        <nav className="flex flex-wrap justify-center gap-6 md:gap-24 mt-8 mb-6">
           {TABS.map((tab) => (
             <button
               key={tab.id}
