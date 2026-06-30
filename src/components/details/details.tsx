@@ -88,7 +88,7 @@ export default function Details() {
           }}
         >
           <div
-            className="p-8 md:p-10 md:min-h-128 flex justify-center"
+            className="p-4 md:p-10 md:min-h-128 flex justify-center"
             style={{
               border: "1px solid rgba(255, 255, 255, 0.6)",
               background: "transparent",
