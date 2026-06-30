@@ -1,11 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { type ComponentType, useState } from "react";
 import Image from "next/image";
+import ItineraryContent from "./itinerary-content";
+import AccommodationsContent from "./accommodations-content";
+import AttireContent from "./attire-content";
+import FaqContent from "./faq-content";
 
 const TABS = [
   { id: "itinerary", label: "Itinerary" },
-  { id: "date-location", label: "Date & Location" },
   { id: "accommodations", label: "Accommodations" },
   { id: "attire", label: "Attire" },
   { id: "faq", label: "FAQ" },
@@ -13,16 +16,11 @@ const TABS = [
 
 type TabId = (typeof TABS)[number]["id"];
 
-const TAB_CONTENT: Record<TabId, string> = {
-  itinerary:
-    "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisque faucibus ex sapien vitae pellentesque sem placerat. In id cursus mi pretium tellus duis convallis. Tempus leo eu aenean sed diam urna tempor. Pulvinar vivamus fringilla lacus nec metus bibendum egestas.",
-  "date-location":
-    "Iaculis massa nisl malesuada lacinia integer nunc posuere. Ut hendrerit semper vel class aptent taciti sociosqu. Ad litora torquent per conubia nostra inceptos himenaeos. Lorem ipsum dolor sit amet consectetur adipisicing elit.",
-  accommodations:
-    "Pulvinar vivamus fringilla lacus nec metus bibendum egestas. Quisque faucibus ex sapien vitae pellentesque sem placerat. In id cursus mi pretium tellus duis convallis. Tempus leo eu aenean sed diam urna tempor.",
-  attire:
-    "In id cursus mi pretium tellus duis convallis. Tempus leo eu aenean sed diam urna tempor. Iaculis massa nisl malesuada lacinia integer nunc posuere. Ut hendrerit semper vel class aptent taciti sociosqu.",
-  faq: "Ut hendrerit semper vel class aptent taciti sociosqu. Ad litora torquent per conubia nostra inceptos himenaeos. Pulvinar vivamus fringilla lacus nec metus bibendum egestas. Quisque faucibus ex sapien vitae pellentesque sem placerat.",
+const TAB_COMPONENTS: Record<TabId, ComponentType> = {
+  itinerary: ItineraryContent,
+  accommodations: AccommodationsContent,
+  attire: AttireContent,
+  faq: FaqContent,
 };
 
 function Title() {
@@ -41,6 +39,7 @@ function Title() {
 
 export default function Details() {
   const [activeTab, setActiveTab] = useState<TabId>("itinerary");
+  const ActiveTabContent = TAB_COMPONENTS[activeTab];
 
   return (
     <section
@@ -55,7 +54,7 @@ export default function Details() {
         <Title />
 
         {/* Tab navigation */}
-        <nav className="flex flex-wrap justify-center gap-6 md:gap-8 mt-8 mb-6">
+        <nav className="flex flex-wrap justify-center gap-6 md:gap-24 mt-8 mb-6">
           {TABS.map((tab) => (
             <button
               key={tab.id}
@@ -83,20 +82,25 @@ export default function Details() {
 
         {/* Content panel */}
         <div
-          className="max-w-4xl mx-auto p-8 md:p-10 md:min-h-128"
+          className="max-w-10/12 mx-auto p-2"
           style={{
-            border: "1px solid var(--background)",
-            background: "transparent",
-            color: "var(--background)",
+            border: "1px solid rgba(255, 255, 255, 0.6)",
           }}
         >
-          <p className="text-sm md:text-base leading-relaxed">
-            {TAB_CONTENT[activeTab]}
-          </p>
+          <div
+            className="p-4 md:p-10 md:min-h-128 flex justify-center"
+            style={{
+              border: "1px solid rgba(255, 255, 255, 0.6)",
+              background: "transparent",
+              color: "var(--background)",
+            }}
+          >
+            <ActiveTabContent />
+          </div>
         </div>
       </div>
       {/* the "footer" */}
-      <footer className="absolute bottom-0 w-full text-white flex items-center justify-center gap-3 py-4 text-sm">
+      <footer className="absolute bottom-0 w-full text-white flex items-left md:justify-center my-4">
         <a
           href="https://github.com/15ajohnson/collin-alivia-wedding"
           target="_blank"
