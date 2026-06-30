@@ -9,7 +9,10 @@ function Event({
 }) {
   return (
     <div className="flex flex-col text-center max-w-64">
-      <p className="border-b text-5xl" style={{ fontFamily: "Symphony Pro" }}>
+      <p
+        className="border-b text-3xl md:text-5xl"
+        style={{ fontFamily: "Symphony Pro" }}
+      >
         {title}
       </p>
       <p>{time}</p>
@@ -20,9 +23,9 @@ function Event({
 
 export default function ItineraryContent() {
   return (
-    <div className="flex flex-col gap-16 w-full justify-around text-xl tracking-wider font-(family-name:--font-playfair-display)">
-      <div className="flex flex-col italic items-center">
-        <p>
+    <div className="flex flex-col gap-16 w-full justify-around md:text-xl tracking-wider font-(family-name:--font-playfair-display)">
+      <div className="flex flex-col italic items-center text-center">
+        <p className="mb-2">
           All events will take place at{" "}
           <a
             className="underline"
@@ -40,7 +43,7 @@ export default function ItineraryContent() {
           </a>
         </p>
       </div>
-      <div className="flex gap-8 justify-around">
+      <div className="flex flex-col md:flex-row gap-8 justify-around">
         <Event
           time="3:30 PM"
           title="Ceremony"
