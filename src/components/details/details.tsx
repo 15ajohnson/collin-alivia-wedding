@@ -5,6 +5,7 @@ import Image from "next/image";
 import ItineraryContent from "./itinerary-content";
 import AccommodationsContent from "./accommodations-content";
 import AttireContent from "./attire-content";
+import FaqContent from "./faq-content";
 
 const TABS = [
   { id: "itinerary", label: "Itinerary" },
@@ -14,17 +15,6 @@ const TABS = [
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
-
-function FaqContent() {
-  return (
-    <p className="text-sm md:text-base leading-relaxed">
-      Ut hendrerit semper vel class aptent taciti sociosqu. Ad litora torquent
-      per conubia nostra inceptos himenaeos. Pulvinar vivamus fringilla lacus
-      nec metus bibendum egestas. Quisque faucibus ex sapien vitae pellentesque
-      sem placerat.
-    </p>
-  );
-}
 
 const TAB_COMPONENTS: Record<TabId, ComponentType> = {
   itinerary: ItineraryContent,
