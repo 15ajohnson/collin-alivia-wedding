@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState, type MouseEvent } from "react";
 import { MenuIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,9 +31,38 @@ interface NavProps {
 }
 
 export default function Nav({ comingSoon = false }: NavProps) {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const headers = comingSoon ? [] : HEADERS;
 
   const mobileDrawerLinks = headers.filter(({ label }) => label !== "RSVP");
+
+  const handleSectionNavigation = (
+    event: MouseEvent<HTMLAnchorElement>,
+    href: string,
+  ) => {
+    if (!href.startsWith("#")) {
+      return;
+    }
+
+    const target = document.querySelector(href);
+
+    if (!target) {
+      return;
+    }
+
+    event.preventDefault();
+
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+    target.scrollIntoView({
+      behavior: prefersReducedMotion ? "auto" : "smooth",
+      block: "start",
+    });
+
+    window.history.pushState(null, "", href);
+  };
 
   return (
     <nav className="hero-load hero-load-stage-1 relative z-10 px-4 pt-8 pb-4 md:px-4 md:pt-10 md:pb-6">
@@ -50,7 +80,7 @@ export default function Nav({ comingSoon = false }: NavProps) {
             RSVP
           </button>
 
-          <Sheet>
+          <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <SheetTrigger asChild>
               <Button
                 variant="ghost"
@@ -68,6 +98,10 @@ export default function Nav({ comingSoon = false }: NavProps) {
                   <SheetTrigger key={label} asChild>
                     <Link
                       href={href}
+                      onClick={(event) => {
+                        setIsMobileMenuOpen(false);
+                        handleSectionNavigation(event, href);
+                      }}
                       className="rounded px-3 py-2 text-right tracking-[0.16em] text-sm font-light hover:bg-muted transition-colors"
                       style={{ fontFamily: "var(--font-bona-nova)" }}
                     >
@@ -100,6 +134,7 @@ export default function Nav({ comingSoon = false }: NavProps) {
             <Link
               key={label}
               href={href}
+              onClick={(event) => handleSectionNavigation(event, href)}
               className={`text-white tracking-[0.2em] text-base hover:opacity-70 transition-opacity ${bold ? "font-bold md:text-xl" : "font-light"}`}
               style={{ fontFamily: "var(--font-bona-nova)" }}
             >
