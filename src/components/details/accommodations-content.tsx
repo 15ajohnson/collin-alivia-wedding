@@ -1,6 +1,6 @@
 export default function AccommodationsContent() {
   return (
-    <div className="flex flex-col justify-around text-2xl tracking-wider w-full text-center font-(family-name:--font-playfair-display)">
+    <div className="flex flex-col justify-around text-sm md:text-2xl tracking-wider w-full text-center font-(family-name:--font-playfair-display)">
       <p>We have reserved a block at:</p>
       <br />
       <p>
@@ -17,7 +17,7 @@ export default function AccommodationsContent() {
         >
           Booking Link
         </a>{" "}
-        to reserve a room within the block
+        to reserve a room within the block.
       </p>
       <p>
         <strong className="font-semibold">
@@ -25,7 +25,7 @@ export default function AccommodationsContent() {
         </strong>
       </p>
       <br />
-      <div className="text-base">
+      <div className="text-xs md:text-base italic">
         <p>
           * You may continue to book outside of the block after this date but
         </p>
