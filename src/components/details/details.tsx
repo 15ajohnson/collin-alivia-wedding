@@ -100,7 +100,7 @@ export default function Details() {
         </div>
       </div>
       {/* the "footer" */}
-      <footer className="absolute bottom-0 w-full text-white flex items-center justify-center gap-3 py-4 text-sm">
+      <footer className="absolute bottom-0 w-full text-white flex items-left md:justify-center my-4">
         <a
           href="https://github.com/15ajohnson/collin-alivia-wedding"
           target="_blank"
