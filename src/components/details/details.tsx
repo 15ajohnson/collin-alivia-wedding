@@ -59,7 +59,7 @@ export default function Details() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className="uppercase tracking-widest text-xs md:text-sm transition-all cursor-pointer bg-transparent border-0 p-0 flex flex-col items-center"
+              className="uppercase tracking-widest text-xs md:text-sm cursor-pointer bg-transparent border-0 p-0 flex flex-col items-center"
               style={{
                 color:
                   activeTab === tab.id
