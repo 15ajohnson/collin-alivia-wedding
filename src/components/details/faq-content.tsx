@@ -2,16 +2,16 @@ function Faq({ q, a }: { q: string; a: string }) {
   return (
     <div className="text-left p-4">
       <p>
-        <strong className="text-base md:text-2xl font-semibold">{q}</strong>
+        <strong className="text-base md:text-xl font-semibold">{q}</strong>
       </p>
-      <p className="text-xs md:text-xl">{a}</p>
+      <p className="text-xs md:text-lg">{a}</p>
     </div>
   );
 }
 
 export default function FaqContent() {
   return (
-    <div className="flex flex-col text-sm md:text-2xl tracking-wider text-center font-(family-name:--font-playfair-display)">
+    <div className="flex flex-col text-sm md:text-xl tracking-wider text-center font-(family-name:--font-playfair-display)">
       <p>
         If you need help with the RSVP or have other questions - please contact
         us!

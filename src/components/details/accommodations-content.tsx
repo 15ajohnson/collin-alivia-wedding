@@ -1,6 +1,6 @@
 export default function AccommodationsContent() {
   return (
-    <div className="flex flex-col justify-around text-sm md:text-2xl tracking-wider w-full text-center font-(family-name:--font-playfair-display)">
+    <div className="flex flex-col justify-around text-sm md:text-xl tracking-wider w-full text-center font-(family-name:--font-playfair-display)">
       <p>We have reserved a block at:</p>
       <br />
       <p>

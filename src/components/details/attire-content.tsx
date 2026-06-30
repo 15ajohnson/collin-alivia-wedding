@@ -9,7 +9,7 @@ function Circle({ color }: { color: string }) {
 
 export default function AttireContent() {
   return (
-    <div className="flex flex-col justify-around text-sm md:text-2xl tracking-wider w-5/6 text-center font-(family-name:--font-playfair-display)">
+    <div className="flex flex-col justify-around text-sm md:text-xl tracking-wider w-5/6 text-center font-(family-name:--font-playfair-display)">
       <p>
         We request you dress in <em>Formal Wedding Attire</em> - for those
         wearing high heels, a thicker block heel is recommended, as the terrain
