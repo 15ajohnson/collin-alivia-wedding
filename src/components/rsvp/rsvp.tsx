@@ -70,7 +70,7 @@ export default function RSVP() {
           {/* Envelope card */}
           <div className="w-full md:max-w-125 md:bg-[url('/images/rsvp-letter-bg.png')] bg-cover bg-center flex flex-col items-center gap-4 px-6 pt-8 pb-10 md:px-10 md:pt-10 md:pb-14 md:aspect-500/420">
             <h2
-              className="text-[4.5rem] leading-tight text-background md:text-foreground text-center"
+              className="text-6xl md:text-7xl leading-tight text-background md:text-foreground text-center"
               style={{ fontFamily: "'Symphony Pro', serif" }}
             >
               Kindly Reply
@@ -100,7 +100,7 @@ export default function RSVP() {
           {/* Countdown */}
           <div className="flex flex-col items-center gap-6">
             <h3
-              className="text-background text-[2rem] md:text-[3rem] leading-none"
+              className="text-background text-2xl md:text-4xl md:text-[3rem] leading-none"
               style={{ fontFamily: "'Amoresa', cursive" }}
             >
               The Countdown Begins
