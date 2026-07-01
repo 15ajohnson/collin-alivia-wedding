@@ -87,10 +87,25 @@ function Title({ className }: { className?: string }) {
 }
 
 const paragraph1 =
-  "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisque faucibus ex sapien vitae pellentesque sem placerat. In id cursus mi pretium tellus duis convallis. Tempus leo eu aenean sed diam urna tempor. Pulvinar vivamus fringilla lacus nec metus bibendum egestas.";
+  "We first met on a video call; Collin's first day on the job in the summer of 2020. Alivia was living in downtown Columbus and Collin was finishing school at Miami University. Over the next year of Covid-induced virtual work, we got to know each other over Skype calls, emails and chat messages. We shared our love for technology and discovered our common upbringing in Wakeman and Milan.";
 
 const paragraph2 =
-  "Iaculis massa nisl malesuada lacinia integer nunc posuere. Ut hendrerit semper vel class aptent taciti sociosqu. Ad litora torquent per conubia nostra inceptos himenaeos.";
+  "In 2021, we became closer friends when we lived neighboring buildings at the Arena District of Columbus. Over the next year we bonded over shared lunches and happy hours and got into the office early every Monday on the chance we'd see each other.";
+
+const paragraph3 =
+  "Pretty soon, we went on our first date for breakfast at Katalina's. Shortly after, we upgraded to a local steakhouse, which kicked off our tradition of monthly fine dining. We began taking trips with each other, a couple times to party in Key West, and even more times at secluded cabins in Hocking Hills. It was there, on a warm spring evening in front of a fireplace at an off-the-grid cottage that Collin proposed to Alivia.";
+
+function StoryContent() {
+  return (
+    <div className="text-sm md:text-base leading-relaxed">
+      <p className="mb-4 ">{paragraph1}</p>
+      <p className="mb-4 ">{paragraph2}</p>
+      <p className="mb-4 ">{paragraph3}</p>
+      <p>We are excited to celebrate our love and commitment with you!</p>
+      <p>Love, Collin & Alivia</p>
+    </div>
+  );
+}
 
 export default function OurStory() {
   return (
@@ -102,15 +117,7 @@ export default function OurStory() {
           <InViewFade>
             <Title className="text-[4rem] leading-none mb-8" />
           </InViewFade>
-          <p
-            className="mb-4 text-base leading-relaxed"
-            style={{ color: "#4B5134" }}
-          >
-            {paragraph1}
-          </p>
-          <p className="text-base leading-relaxed" style={{ color: "#4B5134" }}>
-            {paragraph2}
-          </p>
+          <StoryContent />
         </div>
       </div>
 
@@ -136,15 +143,7 @@ export default function OurStory() {
           </div>
         </div>
         <div className="text-center">
-          <p
-            className="mb-4 text-sm leading-relaxed"
-            style={{ color: "#4B5134" }}
-          >
-            {paragraph1}
-          </p>
-          <p className="text-sm leading-relaxed" style={{ color: "#4B5134" }}>
-            {paragraph2}
-          </p>
+          <StoryContent />
         </div>
       </div>
     </section>
