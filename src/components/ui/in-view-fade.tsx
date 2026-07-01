@@ -25,15 +25,6 @@ export default function InViewFade({
       return;
     }
 
-    const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-
-    if (prefersReducedMotion) {
-      setIsVisible(true);
-      return;
-    }
-
     const observer = new IntersectionObserver(
       (entries) => {
         const [entry] = entries;
