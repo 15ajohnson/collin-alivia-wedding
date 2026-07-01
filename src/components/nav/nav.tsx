@@ -22,7 +22,7 @@ const HEADERS: HeaderLink[] = [
   { label: "OUR STORY", href: "#ourstory" },
   { label: "DETAILS", href: "#details" },
   { label: "RSVP", href: "#rsvp" },
-  { label: "REGISTRY", href: "#registry" },
+  { label: "REGISTRY", href: "https://www.zola.com/registry/collinandalivia" },
   { label: "GALLERY", href: "#gallery" },
 ];
 
