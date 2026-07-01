@@ -6,6 +6,7 @@ import ItineraryContent from "./itinerary-content";
 import AccommodationsContent from "./accommodations-content";
 import AttireContent from "./attire-content";
 import FaqContent from "./faq-content";
+import InViewFade from "@/components/ui/in-view-fade";
 
 const TABS = [
   { id: "itinerary", label: "Itinerary" },
@@ -51,7 +52,9 @@ export default function Details() {
     >
       {/* All content sits above the background image */}
       <div className="relative" style={{ zIndex: 1 }}>
-        <Title />
+        <InViewFade>
+          <Title />
+        </InViewFade>
 
         {/* Tab navigation */}
         <nav className="flex flex-wrap justify-center gap-6 md:gap-24 mt-8 mb-6">

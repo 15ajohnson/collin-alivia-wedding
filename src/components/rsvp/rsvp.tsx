@@ -4,6 +4,7 @@ import { useSyncExternalStore } from "react";
 import { OPEN_RSVP_DIALOG_EVENT } from "@/constants/client-events";
 import RSVPForm from "./rsvp-form";
 import React from "react";
+import InViewFade from "@/components/ui/in-view-fade";
 
 const WEDDING_DATE = new Date("2026-09-12T15:30:00-04:00");
 
@@ -69,12 +70,14 @@ export default function RSVP() {
         <div className="relative z-10 flex flex-col items-center gap-12">
           {/* Envelope card */}
           <div className="w-full md:max-w-125 md:bg-[url('/images/rsvp-letter-bg.png')] bg-cover bg-center flex flex-col items-center gap-4 px-6 pt-8 pb-10 md:px-10 md:pt-10 md:pb-14 md:aspect-500/420">
-            <h2
-              className="text-6xl md:text-7xl leading-tight text-background md:text-foreground text-center"
-              style={{ fontFamily: "'Symphony Pro', serif" }}
-            >
-              Kindly Reply
-            </h2>
+            <InViewFade>
+              <h2
+                className="text-6xl md:text-7xl leading-tight text-background md:text-foreground text-center"
+                style={{ fontFamily: "'Symphony Pro', serif" }}
+              >
+                Kindly Reply
+              </h2>
+            </InViewFade>
             <p
               className="text-background md:text-foreground text-center text-base leading-snug"
               style={{ fontFamily: "var(--font-bona-nova), serif" }}

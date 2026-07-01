@@ -1,3 +1,5 @@
+import InViewFade from "@/components/ui/in-view-fade";
+
 // Frame PNG natural dimensions: 1415 × 1599 (portrait)
 // After rotating 90°:           1599 × 1415 (landscape)
 
@@ -97,7 +99,9 @@ export default function OurStory() {
       <div className="hidden md:grid md:grid-cols-2 md:gap-12 md:items-center md:max-w-7xl md:mx-auto">
         <FramedImage src="/images/our-story-left.gif" alt="Collin and Alivia" />
         <div className="text-center">
-          <Title className="text-[4rem] leading-none mb-8" />
+          <InViewFade>
+            <Title className="text-[4rem] leading-none mb-8" />
+          </InViewFade>
           <p
             className="mb-4 text-base leading-relaxed"
             style={{ color: "#4B5134" }}
@@ -112,7 +116,9 @@ export default function OurStory() {
 
       {/* ── Mobile layout ── */}
       <div className="md:hidden">
-        <Title className="text-[2.75rem] leading-none text-center mb-6" />
+        <InViewFade>
+          <Title className="text-[2.75rem] leading-none text-center mb-6" />
+        </InViewFade>
         <div className="flex gap-2 mb-6">
           <div className="flex-1">
             <FramedImage
